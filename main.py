@@ -1,4 +1,5 @@
 import os.path
+import pathlib
 
 import requests
 import json
@@ -17,21 +18,29 @@ def get_steam_sessionid():
 
 
 def get_cookies_steam_login_secure():
-    if os.path.isfile('cookies.txt'):
-        with open('cookies.txt', 'r') as f:
+    if os.path.isfile('cookies.json'):
+        with open('cookies.json', 'r') as f:
             cookies = json.loads(f.read())
-            return cookies[1]['value']
+            for cookie in cookies:
+                if cookie['name'] == 'steamLoginSecure':
+                    return cookie['value']
     return None
 
 
+def load_chrome_driver():
+    chrome_options = webdriver.ChromeOptions()
+    chrome_path = pathlib.Path(__file__).parent.absolute() / "chromedriver"
+
+    chrome_options.add_argument(f"user-data-dir={chrome_path}")
+    driver = webdriver.Chrome(options=chrome_options)
+    return driver
+
+
 # Get steam identity by logging in with selenium
-def get_steam_login_secure():
+def create_steam_cookies():
     url = f"https://store.steampowered.com/login/?redir=%3Fsnr%3D1_60_4__global-header&redir_ssl=1&snr=1_4_4__global-header"
 
-    if get_cookies_steam_login_secure() is not None:
-        return get_cookies_steam_login_secure()
-
-    driver = webdriver.Chrome()
+    driver = load_chrome_driver()
     driver.get(url)
     try:
         element = WebDriverWait(driver, 600).until(
@@ -39,20 +48,21 @@ def get_steam_login_secure():
         )
     finally:
         cookies = driver.get_cookies()
-        with open('cookies.txt', 'w') as f:
+        with open('cookies.json', 'w') as f:
             f.write(json.dumps(cookies))
         driver.quit()
 
-    if get_cookies_steam_login_secure() is not None:
-        return get_cookies_steam_login_secure()
 
-
-# TODO: Get the true appid of the game. For example, the appid of "Muck" is 1625450, but the post request needs the appid 577069
-def activate_free_steam_game(appid=1782210):
+def activate_free_steam_game(appid):
     sessionid = get_steam_sessionid()
 
-    url = f"https://store.steampowered.com/freelicense/addfreelicense/577069"
-    steam_login_secure = get_steam_login_secure()
+    if get_cookies_steam_login_secure() is None:
+        create_steam_cookies()
+
+    subid = get_steam_subid(appid)
+    url = f"https://store.steampowered.com/freelicense/addfreelicense/{subid}"
+
+    steam_login_secure = get_cookies_steam_login_secure()
     headers = {
         "accept-language": "de,de-DE;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6",
         "cookie": f"sessionid={sessionid}; steamLoginSecure={steam_login_secure}",
@@ -63,6 +73,21 @@ def activate_free_steam_game(appid=1782210):
     }
     response = requests.post(url, headers=headers, data=data)
     print(response.text)
+
+
+# Only works if you are logged in and game is not in your library (and free)
+def get_steam_subid(appid):
+    driver = load_chrome_driver()
+    driver.get(f"https://store.steampowered.com/app/{appid}")
+    try:
+        element = WebDriverWait(driver, 60).until(
+            EC.presence_of_element_located((By.CLASS_NAME, "btn_blue_steamui"))
+        )
+    finally:
+        subid = \
+            driver.find_element(By.CLASS_NAME, "btn_blue_steamui").get_attribute("onclick").split(",")[0].split(" ")[1]
+        driver.quit()
+        return subid
 
 
 # TODO: Currently just returning a list of free games.
@@ -101,4 +126,4 @@ def get_free_steam_games():
     return free_games
 
 
-print(activate_free_steam_game())
+print(activate_free_steam_game(1782210))
