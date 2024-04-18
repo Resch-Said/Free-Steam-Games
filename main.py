@@ -17,6 +17,7 @@ def get_steam_sessionid():
     return sessionid
 
 
+# Get steamLoginSecure cookie from cookies.json
 def get_cookies_steam_login_secure():
     if os.path.isfile('cookies.json'):
         with open('cookies.json', 'r') as f:
@@ -36,7 +37,7 @@ def load_chrome_driver():
     return driver
 
 
-# Get steam identity by logging in with selenium
+# create steam cookies after logging in
 def create_steam_cookies():
     url = f"https://store.steampowered.com/login/?redir=%3Fsnr%3D1_60_4__global-header&redir_ssl=1&snr=1_4_4__global-header"
 
