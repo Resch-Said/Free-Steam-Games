@@ -21,6 +21,8 @@ class Webdriver:
 
         chrome_options.add_argument(f"user-data-dir={cls.chrome_path}")
         driver = webdriver.Chrome(options=chrome_options)
+        cls.update_cookies(driver)  # Making sure cookies are up to date
+
         return driver
 
     @classmethod
@@ -45,7 +47,6 @@ class Webdriver:
 
     @classmethod
     def create_steam_cookies(cls):
-
         driver = cls.load_chrome_driver()
         driver.get(cls.login_url)
         try:
@@ -53,10 +54,14 @@ class Webdriver:
                 EC.presence_of_element_located((By.ID, cls.user_logged_in_id))  # Wait until user is logged in
             )
         finally:
-            cookies = driver.get_cookies()
-            with open('cookies.json', 'w') as f:
-                f.write(json.dumps(cookies))
+            cls.update_cookies(driver)
             driver.quit()
+
+    @classmethod
+    def update_cookies(cls, driver):
+        cookies = driver.get_cookies()
+        with open('cookies.json', 'w') as f:
+            f.write(json.dumps(cookies))
 
 
 Webdriver.create_steam_cookies()
