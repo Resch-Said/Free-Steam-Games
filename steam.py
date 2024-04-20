@@ -1,6 +1,7 @@
 import json
 
 import requests
+from selenium.common import NoSuchElementException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -35,16 +36,24 @@ class Steam:
 
     @classmethod
     def get_subid(cls, appid):
+        subid = None
         driver = Webdriver.load_chrome_driver()
         driver.get(cls.steam_app_url + str(appid))
+
         try:
-            element = WebDriverWait(driver, 60).until(
-                EC.presence_of_element_located((By.CLASS_NAME, "btn_blue_steamui"))
-            )
-        finally:
+            if driver.find_element(By.CLASS_NAME, "already_in_library"):
+                print("Already owned")
+                return None
+        except NoSuchElementException:
+            pass
+
+        try:
             subid = \
                 driver.find_element(By.CLASS_NAME, "btn_blue_steamui").get_attribute("onclick").split(",")[0].split(
                     " ")[1]
+        finally:
+            pass
+
             driver.quit()
             return subid
 
@@ -71,4 +80,5 @@ class Steam:
         print(response.text)
 
 
-print(Steam.activate_free_game(Steam.get_subid(1625450)))
+if __name__ == "__main__":
+    print(Steam.get_subid(1782210))
