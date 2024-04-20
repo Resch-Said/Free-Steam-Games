@@ -80,5 +80,16 @@ class Database:
 
         cls.con.commit()
 
+    @classmethod
+    def main(cls):
+        cls.create_database()
+        cls.remove_outdated_apps()
+        cls.add_new_apps_to_database()
+        appids = cls.get_app_ids()
+        for appid in appids:
+            cls.update_app_detail(appid)
+        cls.con.close()
 
-Database.update_app_detail(50)
+
+if __name__ == '__main__':
+    Database.main()
