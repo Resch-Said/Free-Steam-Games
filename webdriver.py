@@ -64,4 +64,8 @@ class Webdriver:
             f.write(json.dumps(cookies))
 
 
-Webdriver.create_steam_cookies()
+if __name__ == '__main__':
+    Webdriver.create_steam_cookies()
+    driver = Webdriver.load_chrome_driver()
+    driver.get("https://store.steampowered.com/")
+    driver.quit()
