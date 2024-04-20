@@ -36,6 +36,10 @@ class Steam:
 
     @classmethod
     def get_subid(cls, appid):
+        """
+        :param appid:
+        :return: Returns the subid. If the game is already owned, it returns -1. If the game is not free, it returns None
+        """
         subid = None
         driver = Webdriver.load_chrome_driver()
         driver.get(cls.steam_app_url + str(appid))
@@ -43,7 +47,7 @@ class Steam:
         try:
             if driver.find_element(By.CLASS_NAME, "already_in_library"):
                 print("Already owned")
-                return None
+                return -1
         except NoSuchElementException:
             pass
 
@@ -81,4 +85,4 @@ class Steam:
 
 
 if __name__ == "__main__":
-    print(Steam.get_subid(1782210))
+    print(Steam.get_subid(367520))
