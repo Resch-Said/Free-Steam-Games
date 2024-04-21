@@ -14,7 +14,7 @@ class Database:
     @classmethod
     def create_database(cls):
         cls.cur.execute(
-            "CREATE TABLE IF NOT EXISTS apps (appID INTEGER PRIMARY KEY, name TEXT, success INTEGER,is_free INTEGER,"
+            "CREATE TABLE IF NOT EXISTS apps (appID INTEGER PRIMARY KEY, name TEXT, type TEXT, success INTEGER,is_free INTEGER,"
             "subID INTEGER,is_redeemed INTEGER DEFAULT (0), last_update TEXT)")
         cls.con.commit()
 
@@ -65,6 +65,7 @@ class Database:
         response = requests.get(url)
         data = json.loads(response.text)
         data_success = data[str(appid)]['success']
+        app_type = None
 
         try:
             appname = data[str(appid)]['data']['name']
@@ -81,11 +82,18 @@ class Database:
             "UPDATE apps SET success = ? WHERE appID = ?", (data_success, appid))
 
         try:
+            app_type = data[str(appid)]['data']['type']
+            cls.cur.execute(
+                "UPDATE apps SET type = ? WHERE appID = ?", (app_type, appid))
+        except KeyError:
+            pass
+
+        try:
             is_free = data[str(appid)]['data']['is_free']
             cls.cur.execute(
                 "UPDATE apps SET is_free = ? WHERE appID = ?", (is_free, appid))
 
-            if is_free:
+            if is_free and app_type != "demo":
                 subid = Steam.get_subid(appid)
 
                 if subid == -1:
