@@ -20,24 +20,18 @@ class Database:
         cls.con.commit()
 
     @classmethod
-    def get_free_games(cls):
+    def get_app_ids_to_update(cls):
+        # Only update games, dlcs and entries that have not been updated yet
         cls.cur.execute(
-            "SELECT appID FROM apps WHERE is_free = 1 AND is_redeemed = 0")
-        appids = cls.cur.fetchall()
-        appids = [app[0] for app in appids]
-        return appids
+            "SELECT appID FROM apps WHERE is_redeemed = 0 and type = \"game\" or type = \"dlc\" or (type is null and last_update is null) ORDER BY last_update ASC")
 
-    @classmethod
-    def get_app_ids(cls):
-        cls.cur.execute(
-            "SELECT appID FROM apps WHERE is_redeemed = 0 ORDER BY last_update ASC")
         appids = cls.cur.fetchall()
         appids = [app[0] for app in appids]
         return appids
 
     @classmethod
     def remove_outdated_apps(cls):
-        appids = cls.get_app_ids()
+        appids = cls.get_app_ids_to_update()
         steam_appids = Steam.get_app_list()[0]
 
         for appid in appids:
@@ -119,17 +113,37 @@ class Database:
         cls.con.commit()
 
     @classmethod
+    def update_app_redeemed(cls, appid):
+        cls.cur.execute(
+            "UPDATE apps SET is_redeemed = ? WHERE appID = ?", (1, appid))
+        cls.con.commit()
+
+    @classmethod
+    def get_free_games_to_redeem(cls):
+        """
+        :return: Returns a tuple containing two lists\n
+        [0] sub_ids\n
+        [1] app_names
+        """
+        cls.cur.execute(
+            "SELECT appID, subID, name FROM apps WHERE is_free = 1 AND is_redeemed = 0 and subID is not null")
+        response = cls.cur.fetchall()
+        appids = [app[0] for app in response]
+        subids = [app[1] for app in response]
+        appnames = [app[2] for app in response]
+        return appids, subids, appnames
+
+    @classmethod
     def main(cls):
         cls.create_database()
         cls.remove_outdated_apps()
         cls.add_new_apps_to_database()
-        appids = cls.get_app_ids()
+        appids = cls.get_app_ids_to_update()
         for appid in appids:
             cls.update_app_detail(appid)
         cls.con.close()
 
 
-# TODO: Make sure entrys that are not games or dlcs don't get updated to speed up finding free games
 # TODO: Allow an easy way to stop the script
 if __name__ == '__main__':
     Webdriver.create_steam_cookies()
