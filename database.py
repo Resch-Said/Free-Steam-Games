@@ -1,7 +1,7 @@
 import json
 import sqlite3
 from datetime import datetime
-from h11 import Data
+from time import sleep
 import requests
 from steam import Steam
 
@@ -62,9 +62,20 @@ class Database:
     @classmethod
     def update_app_detail(cls, appid):
         url = cls.app_detail_url + str(appid)
-        response = requests.get(url)
-        data = json.loads(response.text)
-        data_success = data[str(appid)]['success']
+
+        response_success = False
+
+        while not response_success:
+            response = requests.get(url)
+            data = json.loads(response.text)
+
+            try:
+                data_success = data[str(appid)]['success']
+                response_success = True
+            except TypeError:
+                print(f"Error in retrieving {appid}. Retrying in 60 seconds")
+                sleep(60)
+
         app_type = None
 
         try:
