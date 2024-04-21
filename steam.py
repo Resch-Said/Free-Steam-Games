@@ -50,11 +50,11 @@ class Steam:
             pass
 
         try:
-            subid = \
-                driver.find_element(By.CLASS_NAME, "btn_blue_steamui").get_attribute(
-                    # Extracts the subid from the onclick attribute
-                    "onclick").split(",")[0].split(" ")[1]
-        finally:
+            subid = driver.find_element(
+                By.XPATH, "//*[starts-with(@onclick, 'AddFreeLicense')]").get_attribute(
+                # Extracts the subid from the onclick attribute
+                "onclick").split(",")[0].split(" ")[1]
+        except NoSuchElementException:
             pass
 
         return subid
