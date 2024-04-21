@@ -103,4 +103,9 @@ if __name__ == "__main__":
             print("Success")
             Database.update_app_redeemed(appids[subids.index(subid)])
         else:
-            print("Failed")
+            timer = 61
+            while timer > 0:
+                print(f"Failed. Probably rate Limited. Taking a break: 
+                      {timer} Minutes remaining", end="\r")
+                sleep(60)
+                timer -= 1
