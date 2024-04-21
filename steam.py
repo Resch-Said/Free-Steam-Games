@@ -1,4 +1,5 @@
 import json
+from time import sleep
 
 import requests
 from selenium.common import NoSuchElementException
@@ -15,6 +16,11 @@ class Steam:
 
     @classmethod
     def get_app_list(cls):
+        """
+        :return: Returns a tuple containing two lists\n
+        [0] app_ids\n
+        [1] app_names
+        """
         response = requests.get(cls.applist_url)
         data = json.loads(response.text)
 
@@ -79,8 +85,22 @@ class Steam:
             "sessionid": {sessionid}
         }
         response = requests.post(url, headers=headers, data=data)
-        print(response.text)
+        sleep(5)
+        if response.status_code == 200:
+            return True
+        else:
+            print(response.text)
+            return False
 
 
 if __name__ == "__main__":
-    print(Steam.get_subid(1625450))
+    from database import Database
+
+    appids, subids, appnames = Database.get_free_games_to_redeem()
+    for subid in subids:
+        print(f"Redeeming: {appnames[subids.index(subid)]} ({subid})")
+        if Steam.activate_free_game(subid):
+            print("Success")
+            Database.update_app_redeemed(appids[subids.index(subid)])
+        else:
+            print("Failed")
