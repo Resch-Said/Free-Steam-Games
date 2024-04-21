@@ -93,20 +93,24 @@ class Steam:
             print(response.text)
             return False
 
+    @classmethod
+    def main(cls):
+        from database import Database
+
+        appids, subids, appnames = Database.get_free_games_to_redeem()
+        for subid in subids:
+            print(f"Redeeming: {appnames[subids.index(subid)]} ({subid})")
+            if Steam.activate_free_game(subid):
+                print("Success")
+                Database.update_app_redeemed(appids[subids.index(subid)])
+            else:
+                timer = 61
+                while timer > 0:
+                    print(f"Failed. Probably rate Limited. Taking a break: {
+                          timer} Minutes remaining", end="\r")
+                    sleep(60)
+                    timer -= 1
+
 
 if __name__ == "__main__":
-    from database import Database
-
-    appids, subids, appnames = Database.get_free_games_to_redeem()
-    for subid in subids:
-        print(f"Redeeming: {appnames[subids.index(subid)]} ({subid})")
-        if Steam.activate_free_game(subid):
-            print("Success")
-            Database.update_app_redeemed(appids[subids.index(subid)])
-        else:
-            timer = 61
-            while timer > 0:
-                print(f"Failed. Probably rate Limited. Taking a break: {
-                      timer} Minutes remaining", end="\r")
-                sleep(60)
-                timer -= 1
+    Steam.main()
