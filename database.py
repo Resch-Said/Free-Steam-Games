@@ -4,6 +4,7 @@ from datetime import datetime
 from time import sleep
 import requests
 from steam import Steam
+from webdriver import Webdriver
 
 
 class Database:
@@ -73,8 +74,8 @@ class Database:
                 data_success = data[str(appid)]['success']
                 response_success = True
             except TypeError:
-                print(f"Error in retrieving {appid}. Retrying in 60 seconds")
-                sleep(60)
+                print(f"Error in retrieving {appid}. Retrying in 70 seconds")
+                sleep(70)
 
         app_type = None
 
@@ -128,5 +129,8 @@ class Database:
         cls.con.close()
 
 
+# TODO: Make sure entrys that are not games or dlcs don't get updated to speed up finding free games
+# TODO: Allow an easy way to stop the script
 if __name__ == '__main__':
+    Webdriver.create_steam_cookies()
     Database.main()
