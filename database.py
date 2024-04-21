@@ -1,9 +1,8 @@
 import json
 import sqlite3
 from datetime import datetime
-
+from h11 import Data
 import requests
-
 from steam import Steam
 
 
@@ -16,12 +15,21 @@ class Database:
     def create_database(cls):
         cls.cur.execute(
             "CREATE TABLE IF NOT EXISTS apps (appID INTEGER PRIMARY KEY, name TEXT, success INTEGER,is_free INTEGER,"
-            "subID INTEGER,is_redeemed INTEGER, last_update TEXT)")
+            "subID INTEGER,is_redeemed INTEGER DEFAULT (0), last_update TEXT)")
         cls.con.commit()
 
     @classmethod
+    def get_free_games(cls):
+        cls.cur.execute(
+            "SELECT appID FROM apps WHERE is_free = 1 AND is_redeemed = 0")
+        appids = cls.cur.fetchall()
+        appids = [app[0] for app in appids]
+        return appids
+
+    @classmethod
     def get_app_ids(cls):
-        cls.cur.execute("SELECT appID FROM apps")
+        cls.cur.execute(
+            "SELECT appID FROM apps WHERE is_redeemed = 0 ORDER BY last_update ASC")
         appids = cls.cur.fetchall()
         appids = [app[0] for app in appids]
         return appids
@@ -46,7 +54,8 @@ class Database:
 
         for appid, appname in zip(appids, appnames):
             print(f"Checking {appname} ({appid})")
-            cls.cur.execute("INSERT OR IGNORE INTO apps (appID, name)VALUES (?, ?)", (appid, appname))
+            cls.cur.execute(
+                "INSERT OR IGNORE INTO apps (appID, name)VALUES (?, ?)", (appid, appname))
         print("Committing changes")
         cls.con.commit()
 
@@ -60,21 +69,30 @@ class Database:
         try:
             appname = data[str(appid)]['data']['name']
             print(f"Updating {appname} ({appid})")
-            cls.cur.execute("UPDATE apps SET name = ? WHERE appID = ?", (appname, appid))
+            cls.cur.execute(
+                "UPDATE apps SET name = ? WHERE appID = ?", (appname, appid))
         except KeyError:
             pass
 
         current_date_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        cls.cur.execute("UPDATE apps SET last_update = ? WHERE appID = ?", (current_date_time, appid))
-        cls.cur.execute("UPDATE apps SET success = ? WHERE appID = ?", (data_success, appid))
+        cls.cur.execute(
+            "UPDATE apps SET last_update = ? WHERE appID = ?", (current_date_time, appid))
+        cls.cur.execute(
+            "UPDATE apps SET success = ? WHERE appID = ?", (data_success, appid))
 
         try:
             is_free = data[str(appid)]['data']['is_free']
-            cls.cur.execute("UPDATE apps SET is_free = ? WHERE appID = ?", (is_free, appid))
+            cls.cur.execute(
+                "UPDATE apps SET is_free = ? WHERE appID = ?", (is_free, appid))
 
             if is_free:
                 subid = Steam.get_subid(appid)
-                cls.cur.execute("UPDATE apps SET subID = ? WHERE appID = ?", (subid, appid))
+
+                if subid == -1:
+                    cls.cur.execute(
+                        "UPDATE apps SET is_redeemed = ? WHERE appID = ?", (1, appid))
+                cls.cur.execute(
+                    "UPDATE apps SET subID = ? WHERE appID = ?", (subid, appid))
         except KeyError:
             pass
 
