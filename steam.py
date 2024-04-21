@@ -50,8 +50,8 @@ class Steam:
 
         try:
             if driver.find_element(By.CLASS_NAME, "already_in_library"):
-                print("Already owned")
-                return -1
+                print("Already owned. Can't retrive subid")
+                subid = -1
         except NoSuchElementException:
             pass
 
@@ -63,6 +63,7 @@ class Steam:
         except NoSuchElementException:
             pass
 
+        driver.quit()
         return subid
 
     @classmethod
@@ -105,7 +106,7 @@ if __name__ == "__main__":
         else:
             timer = 61
             while timer > 0:
-                print(f"Failed. Probably rate Limited. Taking a break: 
-                      {timer} Minutes remaining", end="\r")
+                print(f"Failed. Probably rate Limited. Taking a break: {
+                      timer} Minutes remaining", end="\r")
                 sleep(60)
                 timer -= 1

@@ -15,7 +15,7 @@ class Database:
     @classmethod
     def create_database(cls):
         cls.cur.execute(
-            "CREATE TABLE IF NOT EXISTS apps (appID INTEGER PRIMARY KEY, name TEXT, type TEXT, success INTEGER,is_free INTEGER,"
+            "CREATE TABLE IF NOT EXISTS apps (appID INTEGER PRIMARY KEY, name TEXT, type TEXT, main_game_id INTEGER, success INTEGER, is_free INTEGER,"
             "subID INTEGER,is_redeemed INTEGER DEFAULT (0), last_update TEXT)")
         cls.con.commit()
 
@@ -68,7 +68,7 @@ class Database:
                 data_success = data[str(appid)]['success']
                 response_success = True
             except TypeError:
-                print(f"Error in retrieving {appid}. Retrying in 70 seconds")
+                print(f"Error in retrieving {appid}. Retrying in 60 seconds")
                 sleep(70)
 
         app_type = None
@@ -110,6 +110,13 @@ class Database:
         except KeyError:
             pass
 
+        try:
+            main_game_id = data[str(appid)]['data']['fullgame']['appid']
+            cls.cur.execute(
+                "UPDATE apps SET main_game_id = ? WHERE appID = ?", (main_game_id, appid))
+        except KeyError:
+            pass
+
         cls.con.commit()
 
     @classmethod
@@ -125,8 +132,17 @@ class Database:
         [0] sub_ids\n
         [1] app_names
         """
-        cls.cur.execute(  # TODO: We need to associate games with their dlcs and music to avoid redeeming them if the main game is not redeemed
-            "SELECT appID, subID, name FROM apps WHERE is_free = 1 AND is_redeemed = 0 and subID is not null and type is \"game\"")
+        cls.cur.execute(
+            """
+            SELECT appID, subID, name 
+            FROM apps 
+            WHERE is_free = 1 
+            AND is_redeemed = 0 
+            AND subID is not null 
+            AND (type is "game" or type is "dlc")
+            AND (main_game_id is null or main_game_id IN (SELECT appID FROM apps WHERE is_redeemed = 1))
+            """
+        )
         response = cls.cur.fetchall()
         appids = [app[0] for app in response]
         subids = [app[1] for app in response]
