@@ -151,6 +151,8 @@ class Database:
 
     @classmethod
     def main(cls):
+        Webdriver.create_steam_cookies()
+
         cls.create_database()
         cls.remove_outdated_apps()
         cls.add_new_apps_to_database()
@@ -162,5 +164,4 @@ class Database:
 
 # TODO: Allow an easy way to stop the script
 if __name__ == '__main__':
-    Webdriver.create_steam_cookies()
     Database.main()
