@@ -125,8 +125,8 @@ class Database:
         [0] sub_ids\n
         [1] app_names
         """
-        cls.cur.execute(
-            "SELECT appID, subID, name FROM apps WHERE is_free = 1 AND is_redeemed = 0 and subID is not null")
+        cls.cur.execute(  # TODO: We need to associate games with their dlcs and music to avoid redeeming them if the main game is not redeemed
+            "SELECT appID, subID, name FROM apps WHERE is_free = 1 AND is_redeemed = 0 and subID is not null and type is \"game\"")
         response = cls.cur.fetchall()
         appids = [app[0] for app in response]
         subids = [app[1] for app in response]
