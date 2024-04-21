@@ -3,8 +3,6 @@ import json
 import requests
 from selenium.common import NoSuchElementException
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support.wait import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
 
 from webdriver import Webdriver
 
@@ -53,13 +51,13 @@ class Steam:
 
         try:
             subid = \
-                driver.find_element(By.CLASS_NAME, "btn_blue_steamui").get_attribute("onclick").split(",")[0].split(
-                    " ")[1]
+                driver.find_element(By.CLASS_NAME, "btn_blue_steamui").get_attribute(
+                    # Extracts the subid from the onclick attribute
+                    "onclick").split(",")[0].split(" ")[1]
         finally:
             pass
 
-            driver.quit()
-            return subid
+        return subid
 
     @classmethod
     def activate_free_game(cls, subid):
@@ -85,4 +83,4 @@ class Steam:
 
 
 if __name__ == "__main__":
-    print(Steam.get_subid(367520))
+    print(Steam.get_subid(1625450))
