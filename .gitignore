@@ -162,3 +162,5 @@ cookies.json
 /chromedriver
 steam_free_games.db
 steam_free_games.db-journal
+/driver
+/selenium

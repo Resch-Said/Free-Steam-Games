@@ -2,4 +2,4 @@
 
 # Web
 requests
-selenium==4.6
+selenium
