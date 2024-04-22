@@ -40,6 +40,10 @@ class ChromeDriverManager:
 
     @classmethod
     def get_current_version(cls):
+        if not os.path.exists("../driver/version.txt"):
+            with open("../driver/version.txt", "w") as f:
+                f.write("0")
+
         with open("../driver/version.txt", "r") as f:
             return f.read()
 

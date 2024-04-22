@@ -10,7 +10,7 @@ from webdriver import Webdriver
 
 
 class Database:
-    con = sqlite3.connect("steam_free_games.db")
+    con = sqlite3.connect("../database/steam_free_games.db")
     cur = con.cursor()
     app_detail_url = "https://store.steampowered.com/api/appdetails?appids="
 

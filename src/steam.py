@@ -98,7 +98,7 @@ class Steam:
 
     @classmethod
     def main(cls):
-        from database import Database
+        from src.database import Database
 
         appids, subids, appnames = Database.get_free_games_to_redeem()
         for subid in subids:
