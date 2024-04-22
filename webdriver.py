@@ -16,10 +16,16 @@ class Webdriver:
     user_logged_in_id = "account_pulldown"
 
     @classmethod
-    def load_chrome_driver(cls):
+    def load_chrome_driver(cls, hidden=False):
         chrome_options = webdriver.ChromeOptions()
 
         chrome_options.add_argument(f"user-data-dir={cls.chrome_path}")
+        chrome_options.add_argument("--enable-chrome-browser-cloud-management")
+        chrome_options.add_argument("--no-sandbox")
+
+        if hidden:
+            chrome_options.add_argument("--headless=new")
+
         driver = webdriver.Chrome(options=chrome_options)
         cls.update_cookies(driver)  # Making sure cookies are up to date
 
@@ -51,7 +57,8 @@ class Webdriver:
         driver.get(cls.login_url)
         try:
             element = WebDriverWait(driver, 600).until(
-                EC.presence_of_element_located((By.ID, cls.user_logged_in_id))  # Wait until user is logged in
+                # Wait until user is logged in
+                EC.presence_of_element_located((By.ID, cls.user_logged_in_id))
             )
         finally:
             cls.update_cookies(driver)

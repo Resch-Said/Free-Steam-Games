@@ -45,7 +45,7 @@ class Steam:
         :return: Returns the subid. If the game is already owned, it returns -1. If the game is not free, it returns None
         """
         subid = None
-        driver = Webdriver.load_chrome_driver()
+        driver = Webdriver.load_chrome_driver(hidden=True)
         driver.get(cls.steam_app_url + str(appid))
 
         try:
@@ -63,7 +63,6 @@ class Steam:
         except NoSuchElementException:
             pass
 
-        driver.quit()
         return subid
 
     @classmethod
