@@ -24,8 +24,8 @@ class Steam:
         response = requests.get(cls.applist_url)
         data = json.loads(response.text)
 
-        app_ids = [app['appid'] for app in data['applist']['apps']]
-        app_names = [app['name'] for app in data['applist']['apps']]
+        app_ids = [app["appid"] for app in data["applist"]["apps"]]
+        app_names = [app["name"] for app in data["applist"]["apps"]]
         return app_ids, app_names
 
     @classmethod
@@ -33,10 +33,10 @@ class Steam:
         response = requests.get(cls.appdetails_url + str(appid))
         data = json.loads(response.text)
 
-        if not data[str(appid)]['success']:
+        if not data[str(appid)]["success"]:
             return None
 
-        return data[str(appid)]['data']
+        return data[str(appid)]["data"]
 
     @classmethod
     def get_subid(cls, appid):
@@ -56,10 +56,17 @@ class Steam:
             pass
 
         try:
-            subid = driver.find_element(
-                By.XPATH, "//*[starts-with(@onclick, 'AddFreeLicense')]").get_attribute(
-                # Extracts the subid from the onclick attribute
-                "onclick").split(",")[0].split(" ")[1]
+            subid = (
+                driver.find_element(
+                    By.XPATH, "//*[starts-with(@onclick, 'AddFreeLicense')]"
+                )
+                .get_attribute(
+                    # Extracts the subid from the onclick attribute
+                    "onclick"
+                )
+                .split(",")[0]
+                .split(" ")[1]
+            )
         except NoSuchElementException:
             pass
 
@@ -80,10 +87,7 @@ class Steam:
             "accept-language": "de,de-DE;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6",
             "cookie": f"sessionid={sessionid}; steamLoginSecure={steam_login_secure}",
         }
-        data = {
-            "ajax": "true",
-            "sessionid": {sessionid}
-        }
+        data = {"ajax": "true", "sessionid": {sessionid}}
         response = requests.post(url, headers=headers, data=data)
         sleep(5)
         if response.status_code == 200:
@@ -105,8 +109,10 @@ class Steam:
             else:
                 timer = 61
                 while timer > 0:
-                    print(f"Failed. Probably rate Limited. Taking a break: {
-                          timer} Minutes remaining", end="\r")
+                    print(
+                        f"Failed. Probably rate Limited. Taking a break: {timer} Minutes remaining",
+                        end="\r",
+                    )
                     sleep(60)
                     timer -= 1
 
