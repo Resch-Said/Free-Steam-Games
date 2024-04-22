@@ -33,6 +33,8 @@ Attach to a specific screen with `screen -r <number>` or just `screen -r`
 This will allow us to run the redeemer in the background and regularly check if something went wrong or just stop it altogether.
 
 ## How to use the software
+If you're using a newer machine like Windows, it could the beneficial to change `selenium==<version>` inside the requirements.txt to `selenium`, so you get the newest version.
+
 > git clone https://github.com/Resch-Said/Free-Steam-Games.git \
 > cd Free-Steam-Games/ \
 > python -m pip install -r requirements.txt
