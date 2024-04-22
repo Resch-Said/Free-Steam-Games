@@ -6,6 +6,7 @@ from time import sleep
 import requests
 
 from better_path import BetterPath
+from exit_listener import ExitListener
 from steam import Steam
 from webdriver import Webdriver
 
@@ -41,6 +42,9 @@ class Database:
         steam_appids = Steam.get_app_list()[0]
 
         for appid in appids:
+            if ExitListener.get_exit_flag():
+                break
+
             print(f"Checking if {appid} is still existing")
             if appid not in steam_appids:
                 print(f"Removing {appid}")
@@ -54,6 +58,9 @@ class Database:
         appids, appnames = Steam.get_app_list()
 
         for appid, appname in zip(appids, appnames):
+            if ExitListener.get_exit_flag():
+                break
+
             print(f"Checking {appname} ({appid})")
             cls.cur.execute(
                 "INSERT OR IGNORE INTO apps (appID, name)VALUES (?, ?)",
@@ -176,6 +183,9 @@ class Database:
         cls.add_new_apps_to_database()
         appids = cls.get_app_ids_to_update()
         for index, appid in enumerate(appids):
+            if ExitListener.get_exit_flag():
+                break
+
             cls.update_app_detail(appid)
             remaining_apps = len(appids) - index
             print(":\t" + f" {remaining_apps} apps left to update")
