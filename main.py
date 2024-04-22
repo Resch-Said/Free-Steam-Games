@@ -5,7 +5,7 @@ from steam import Steam
 
 def main():
     while True:
-        break_time = 1 * 60 * 60  # hours
+        break_time = 1 * 60 * 60  # seconds
 
         Database.main()
         Steam.main()
