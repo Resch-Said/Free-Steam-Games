@@ -3,6 +3,8 @@ from zipfile import ZipFile
 
 import requests
 
+from better_path import BetterPath
+
 
 class ChromeDriverManager:
     windows_driver_url = "chromedriver_win32.zip"
@@ -40,6 +42,8 @@ class ChromeDriverManager:
 
     @classmethod
     def get_current_version(cls):
+        BetterPath.create_path("../driver")
+
         if not os.path.exists("../driver/version.txt"):
             with open("../driver/version.txt", "w") as f:
                 f.write("0")
