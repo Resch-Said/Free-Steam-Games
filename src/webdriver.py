@@ -22,9 +22,12 @@ class Webdriver:
         chrome_driver_path = None
 
         if os.name == "nt":
-            chrome_driver_path = "../driver/chromedriver.exe"
+
+            chrome_driver_path = BetterPath.get_absolute_path(
+                "../driver/chromedriver.exe"
+            )
         elif os.name == "posix":
-            chrome_driver_path = "../driver/chromedriver"
+            chrome_driver_path = BetterPath.get_absolute_path("../driver/chromedriver")
 
         chrome_options = webdriver.ChromeOptions()
         chrome_options.binary_location = chrome_driver_path
