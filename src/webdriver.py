@@ -27,7 +27,6 @@ class Webdriver:
             )
         elif os.name == "posix":
             chrome_driver_path = BetterPath.get_absolute_path("../driver/chromedriver")
-            os.chmod(chrome_driver_path, 0o775)
 
         chrome_options = webdriver.ChromeOptions()
         chrome_options.binary_location = chrome_driver_path
