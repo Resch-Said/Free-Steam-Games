@@ -1,8 +1,8 @@
 from time import sleep
 
-from src.chrome_driver_manager import ChromeDriverManager
-from src.database import Database
-from src.steam import Steam
+from chrome_driver_manager import ChromeDriverManager
+from database import Database
+from steam import Steam
 
 
 def main():

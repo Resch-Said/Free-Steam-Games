@@ -5,12 +5,14 @@ from time import sleep
 
 import requests
 
+from better_path import BetterPath
 from steam import Steam
 from webdriver import Webdriver
 
 
 class Database:
-    con = sqlite3.connect("../database/steam_free_games.db")
+
+    con = sqlite3.connect(BetterPath.get_absolute_path("../database") + "/steam.db")
     cur = con.cursor()
     app_detail_url = "https://store.steampowered.com/api/appdetails?appids="
 

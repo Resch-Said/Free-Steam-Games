@@ -6,7 +6,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
 
 from selenium import webdriver
-from src.better_path import BetterPath
+from better_path import BetterPath
 
 
 class Webdriver:

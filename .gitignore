@@ -160,7 +160,7 @@ cython_debug/
 .idea/
 cookies.json
 /chromedriver
-steam_free_games.db
-steam_free_games.db-journal
 /driver
 /selenium
+*.db-journal
+*.db
