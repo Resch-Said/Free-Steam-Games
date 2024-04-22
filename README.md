@@ -1,7 +1,7 @@
 # Free-Steam-Games
 Tutorial is based for raspberry pi 3
 ## Install Python 3.12
-> wget https://www.python.org/ftp/python/3.12.3/Python-3.12.3.tgz\
+> wget https://www.python.org/ftp/python/3.12.3/Python-3.12.3.tgz \
 > tar -xvf Python-3.12.3.tar.xz\
 > cd Python-3.12.3\
 > ./configure --enable-optimizations\
@@ -33,8 +33,8 @@ Attach to a specific screen with `screen -r <number>` or just `screen -r`
 This will allow us to run the redeemer in the background and regularly check if something went wrong or just stop it altogether.
 
 ## How to use the software
-> git clone https://github.com/Resch-Said/Free-Steam-Games.git\
-> cd Free-Steam-Games/\
+> git clone https://github.com/Resch-Said/Free-Steam-Games.git \
+> cd Free-Steam-Games/ \
 > python -m pip install -r requirements.txt
 > python main.py
 
