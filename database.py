@@ -99,7 +99,7 @@ class Database:
             cls.cur.execute(
                 "UPDATE apps SET is_free = ? WHERE appID = ?", (is_free, appid))
 
-            if is_free and app_type != "demo":
+            if is_free and (app_type == "game" or app_type == "dlc"):
                 subid = Steam.get_subid(appid)
 
                 if subid == -1:
