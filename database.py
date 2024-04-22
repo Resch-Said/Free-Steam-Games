@@ -128,9 +128,10 @@ class Database:
     @classmethod
     def get_free_games_to_redeem(cls):
         """
-        :return: Returns a tuple containing two lists\n
-        [0] sub_ids\n
-        [1] app_names
+        :return: Returns a tuple containing three lists\n
+        [0] app_ids\n
+        [1] sub_ids\n
+        [2] app_names
         """
         cls.cur.execute(
             """
