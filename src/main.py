@@ -2,8 +2,8 @@ from time import sleep
 
 from chrome_driver_manager import ChromeDriverManager
 from database import Database
-from steam import Steam
 from exit_listener import ExitListener
+from steam import Steam
 
 exit_flag = False
 
@@ -40,6 +40,5 @@ def main():
     print("Done!")
 
 
-# TODO: Show how many games are left to be checked
 if __name__ == "__main__":
     main()
