@@ -3,4 +3,4 @@
 # Web
 requests~=2.31.0
 selenium~=4.19.0
-keyboard~=0.13.5
+pynput~=1.7.6

@@ -1,4 +1,3 @@
-import threading
 from time import sleep
 
 from chrome_driver_manager import ChromeDriverManager
@@ -10,8 +9,7 @@ exit_flag = False
 
 
 def main():
-    listener_thread = threading.Thread(target=ExitListener.listener_quit)
-    listener_thread.start()
+    ExitListener.listener_quit()
     print("Press 'q' to exit the program.")
 
     while True:
@@ -39,6 +37,7 @@ def main():
                 end="\r",
             )
             sleep(1)
+    print("Done!")
 
 
 # TODO: Show how many games are left to be checked

@@ -1,19 +1,22 @@
-from time import sleep
-
-import keyboard
+from pynput import keyboard
 
 
 class ExitListener:
     exit_flag = False
 
     @classmethod
-    def listener_quit(cls):
-        while True:
-            if keyboard.read_key() == "q" or keyboard.read_key() == "Q":
-                print("Finishing current task before exiting.")
+    def on_press(cls, key):
+        try:
+            if key.char == "q":
                 cls.exit_flag = True
-                break
-            sleep(1)
+                print("\nExiting the program. Please wait...")
+        except AttributeError:
+            pass
+
+    @classmethod
+    def listener_quit(cls):
+        listener = keyboard.Listener(on_press=cls.on_press)
+        listener.start()
 
     @classmethod
     def get_exit_flag(cls):
