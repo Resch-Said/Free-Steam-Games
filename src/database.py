@@ -12,9 +12,9 @@ from webdriver import Webdriver
 
 
 class Database:
-    BetterPath.create_path("../database")
+    BetterPath.create_path("./database")
 
-    con = sqlite3.connect("../database" + "/steam.db")
+    con = sqlite3.connect("./database" + "/steam.db")
     cur = con.cursor()
     app_detail_url = "https://store.steampowered.com/api/appdetails?appids="
 
