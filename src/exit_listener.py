@@ -8,7 +8,7 @@ class ExitListener:
     def on_press(cls, key):
         try:
             if key.char == "q":
-                cls.exit_flag = True
+                cls.set_exit_flag(True)
                 print("\nExiting the program. Please wait...")
         except AttributeError:
             pass
@@ -21,3 +21,7 @@ class ExitListener:
     @classmethod
     def get_exit_flag(cls):
         return cls.exit_flag
+
+    @classmethod
+    def set_exit_flag(cls, flag):
+        cls.exit_flag = flag

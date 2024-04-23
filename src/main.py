@@ -4,8 +4,6 @@ from database import Database
 from exit_listener import ExitListener
 from steam import Steam
 
-exit_flag = False
-
 
 def main():
     ExitListener.listener_quit()
@@ -17,7 +15,6 @@ def main():
 
         break_time = 8 * 60 * 60  # seconds
 
-       # ChromeDriverManager().main()
         if ExitListener.get_exit_flag():
             break
 

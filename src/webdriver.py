@@ -7,18 +7,27 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
 
 from better_path import BetterPath
+from exit_listener import ExitListener
 
 
 class Webdriver:
     login_url = "https://store.steampowered.com/login/"
     steam_url = "https://store.steampowered.com/"
 
-    browser_path = BetterPath.get_absolute_path("../selenium/webdriver")
+    browser_path = BetterPath.get_absolute_path(
+        "../selenium/webdriver"
+    )  # user-data-dir requires absolute path
     cookies_path = "../selenium/cookies.json"
     user_logged_in_id = "account_pulldown"
 
+    service = webdriver.ChromeService(
+        executable_path="/usr/bin/chromium-browser"
+    )  # For Linux
+
     @classmethod
     def load_chrome_driver(cls, hidden=False):
+        driver = None
+
         chrome_options = webdriver.ChromeOptions()
 
         chrome_options.add_argument(f"user-data-dir={cls.browser_path}")
@@ -28,7 +37,14 @@ class Webdriver:
         if hidden:
             chrome_options.add_argument("--headless=new")
 
-        driver = webdriver.Chrome(options=chrome_options)
+        if os.name == "nt":
+            driver = webdriver.Chrome(options=chrome_options)
+        elif os.name == "posix":
+            driver = webdriver.Chrome(service=cls.service, options=chrome_options)
+        else:
+            print("OS not supported")
+            ExitListener.set_exit_flag(True)
+
         cls.update_cookies(driver)  # Making sure cookies are up to date
         return driver
 
