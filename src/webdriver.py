@@ -21,7 +21,7 @@ class Webdriver:
     user_logged_in_id = "account_pulldown"
 
     service = webdriver.ChromeService(
-        executable_path="/usr/bin/chromium-browser"
+        executable_path="/usr/bin/chromedriver"
     )  # For Linux
 
     @classmethod
