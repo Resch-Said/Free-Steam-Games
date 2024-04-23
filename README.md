@@ -21,6 +21,7 @@ If you're using a newer machine like Windows, it could the beneficial to change 
 > git clone https://github.com/Resch-Said/Free-Steam-Games.git \
 > cd Free-Steam-Games/ \
 > python -m pip install -r requirements.txt \
+> cd src/ \
 > python main.py
 
 Wait until the login screen opens and login into steam. That's pretty much all.\
