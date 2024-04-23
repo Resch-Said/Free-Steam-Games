@@ -27,6 +27,13 @@ class Database:
         cls.con.commit()
 
     @classmethod
+    def get_appids(cls):
+        cls.cur.execute("SELECT appID FROM apps")
+        appids = cls.cur.fetchall()
+        appids = [app[0] for app in appids]
+        return appids
+
+    @classmethod
     def get_app_ids_to_update(cls):
         # Only update games, dlcs and entries that have not been updated yet
         cls.cur.execute(
@@ -39,10 +46,10 @@ class Database:
 
     @classmethod
     def remove_outdated_apps(cls):
-        appids = cls.get_app_ids_to_update()
+        database_appids = cls.get_appids()
         steam_appids = Steam.get_app_list()[0]
 
-        for appid in appids:
+        for appid in database_appids:
             if ExitListener.get_exit_flag():
                 break
 
