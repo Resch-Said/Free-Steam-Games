@@ -3,4 +3,3 @@
 # Web
 requests~=2.31.0
 selenium~=4.19.0
-pynput~=1.7.6

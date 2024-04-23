@@ -6,8 +6,7 @@ from steam import Steam
 
 
 def main():
-    ExitListener.listener_quit()
-    print("Press 'q' to exit the program.")
+    ExitListener.start()
 
     while True:
         if ExitListener.get_exit_flag():
