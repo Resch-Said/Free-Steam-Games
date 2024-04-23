@@ -2,7 +2,7 @@
 Tutorial is based for raspberry pi 3
 ## Install Python 3.12
 > wget https://www.python.org/ftp/python/3.12.3/Python-3.12.3.tgz \
-> tar -xvf Python-3.12.3.tar.xz\
+> tar -xvf Python-3.12.3.tgz
 > cd Python-3.12.3\
 > ./configure --enable-optimizations\
 > make -j 1\
