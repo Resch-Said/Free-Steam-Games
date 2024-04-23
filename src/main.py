@@ -1,6 +1,5 @@
 from time import sleep
 
-from chrome_driver_manager import ChromeDriverManager
 from database import Database
 from exit_listener import ExitListener
 from steam import Steam
@@ -18,7 +17,7 @@ def main():
 
         break_time = 8 * 60 * 60  # seconds
 
-        ChromeDriverManager().main()
+       # ChromeDriverManager().main()
         if ExitListener.get_exit_flag():
             break
 

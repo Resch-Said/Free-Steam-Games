@@ -19,16 +19,7 @@ class Webdriver:
 
     @classmethod
     def load_chrome_driver(cls, hidden=False):
-        chrome_driver_path = None
-
-        if os.name == "nt":
-            chrome_driver_path = "../driver/chromedriver.exe"
-
-        elif os.name == "posix":
-            chrome_driver_path = "../driver/chromedriver"
-
         chrome_options = webdriver.ChromeOptions()
-        chrome_options.binary_location = chrome_driver_path
 
         chrome_options.add_argument(f"user-data-dir={cls.browser_path}")
         chrome_options.add_argument("--enable-chrome-browser-cloud-management")
