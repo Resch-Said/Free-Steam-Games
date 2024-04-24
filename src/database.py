@@ -18,7 +18,7 @@ class Database:
     con = sqlite3.connect("../database" + "/steam.db")
     cur = con.cursor()
     app_detail_url = "https://store.steampowered.com/api/appdetails?appids="
-    app_detail_retrying_time = 180  # Seconds
+    app_detail_retrying_time = 240  # Seconds
 
     @classmethod
     def create_database(cls):
@@ -38,7 +38,7 @@ class Database:
     def get_app_ids_to_update(cls):
         # Only update games, dlcs and entries that have not been updated yet
         cls.cur.execute(
-            'SELECT appID FROM apps WHERE is_redeemed = 0 and type = "game" or type = "dlc" or (type is null and last_update is null) ORDER BY last_update ASC'
+            'SELECT appID FROM apps WHERE is_redeemed = 0 and (type = "game" or type = "dlc") or (type is null and last_update is null) ORDER BY last_update ASC'
         )
 
         appids = cls.cur.fetchall()
