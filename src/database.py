@@ -1,6 +1,7 @@
 import json
 import sqlite3
 from datetime import datetime
+from json import JSONDecodeError
 from time import sleep
 
 import requests
@@ -69,13 +70,20 @@ class Database:
 
         while not response_success:
             response = requests.get(url)
-            data = json.loads(response.text)
 
             try:
+                data = json.loads(response.text)
                 data_success = data[str(appid)]["success"]
                 response_success = True
             except TypeError:
-                print(f"Error in retrieving {appid}. Retrying in 60 seconds")
+                print(
+                    f"Error in retrieving {appid}. Response was: {response.text} Retrying in 60 seconds"
+                )
+                sleep(70)
+            except JSONDecodeError:
+                print(
+                    f"Error in retrieving {appid}. JSONDecodeError Retrying in 60 seconds"
+                )
                 sleep(70)
 
         app_type = None
