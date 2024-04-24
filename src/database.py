@@ -69,6 +69,9 @@ class Database:
         new_apps = cls.get_apps_not_in_database(steam_apps, database_apps)
 
         for appid in new_apps:
+            if ExitListener.get_exit_flag():
+                break
+
             print(f"Adding {appid} to the database")
             cls.cur.execute(
                 "INSERT OR IGNORE INTO apps (appID, name)VALUES (?, ?)",
@@ -216,6 +219,9 @@ class Database:
         conflicting_apps = cls.get_conflicting_apps(steam_apps)
 
         for appid, appname in conflicting_apps.items():
+            if ExitListener.get_exit_flag():
+                break
+
             print(f"Name of {appid} changed from {database_apps[appid]} to {appname}")
             cls.cur.execute(
                 "UPDATE apps SET name = ? WHERE appID = ?", (appname, appid)
