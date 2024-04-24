@@ -18,7 +18,7 @@ class Database:
     con = sqlite3.connect("../database" + "/steam.db")
     cur = con.cursor()
     app_detail_url = "https://store.steampowered.com/api/appdetails?appids="
-    app_detail_retrying_time = 140
+    app_detail_retrying_time = 180  # Seconds
 
     @classmethod
     def create_database(cls):
