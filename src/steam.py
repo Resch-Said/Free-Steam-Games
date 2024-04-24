@@ -54,11 +54,15 @@ class Steam:
                 print(" Already owned. Can't retrive subid")
                 driver.quit()
                 return -1
+        except NoSuchElementException:
+            pass
+        finally:
+            driver.quit()
 
+        try:
             subid_element = driver.find_element(
                 By.XPATH, "//*[starts-with(@onclick, 'AddFreeLicense')]"
             )
-
             subid = subid_element.get_attribute("onclick").split(",")[0].split(" ")[1]
         except NoSuchElementException:
             print(f"NoSuchElementException occurred: Probably not free.")
