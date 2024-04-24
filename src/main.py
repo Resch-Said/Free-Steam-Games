@@ -1,8 +1,8 @@
 from time import sleep
 
-from src.database import Database
-from src.exit_listener import ExitListener
-from src.steam import Steam
+from database import Database
+from exit_listener import ExitListener
+from steam import Steam
 
 
 def main():

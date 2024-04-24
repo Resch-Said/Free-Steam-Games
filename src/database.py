@@ -6,16 +6,16 @@ from time import sleep
 
 import requests
 
-from src.better_path import BetterPath
-from src.exit_listener import ExitListener
-from src.steam import Steam
-from src.webdriver import Webdriver
+from better_path import BetterPath
+from exit_listener import ExitListener
+from steam import Steam
+from webdriver import Webdriver
 
 
 class Database:
-    BetterPath.create_path("./database")
+    BetterPath.create_path("../database")
 
-    con = sqlite3.connect("./database" + "/steam.db")
+    con = sqlite3.connect("../database" + "/steam.db")
     cur = con.cursor()
     app_detail_url = "https://store.steampowered.com/api/appdetails?appids="
 
@@ -53,10 +53,7 @@ class Database:
             if ExitListener.get_exit_flag():
                 break
 
-            print(
-                f"{len(appids) - appids.index(appid)} apps left to check",
-                end="\r",
-            )
+            print(f"{len(appids) - appids.index(appid)} apps left to check")
             cls.cur.execute(
                 "INSERT OR IGNORE INTO apps (appID, name)VALUES (?, ?)",
                 (appid, appname),

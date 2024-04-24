@@ -6,8 +6,8 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
 
-from src.better_path import BetterPath
-from src.exit_listener import ExitListener
+from better_path import BetterPath
+from exit_listener import ExitListener
 
 
 class Webdriver:
@@ -15,9 +15,9 @@ class Webdriver:
     steam_url = "https://store.steampowered.com/"
 
     browser_path = BetterPath.get_absolute_path(
-        "./selenium/webdriver"
+        "../selenium/webdriver"
     )  # user-data-dir requires absolute path
-    cookies_path = "./selenium/cookies.json"
+    cookies_path = "../selenium/cookies.json"
     user_logged_in_id = "account_pulldown"
 
     service = webdriver.ChromeService(
