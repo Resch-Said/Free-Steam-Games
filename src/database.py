@@ -49,28 +49,29 @@ class Database:
         steam_apps = Steam.get_apps()
         database_apps = cls.get_apps()
 
-        for appid, appname in steam_apps.items():
-            if ExitListener.get_exit_flag():
-                break
-
-            print(
-                f"{len(steam_apps) - list(steam_apps.keys()).index(appid)} apps left to check"
+        # Apps that changed their names since the last update
+        conflicting_apps = {
+            appid: appname
+            for appid, appname in steam_apps.items()
+            if appid in database_apps and appname != database_apps[appid]
+        }
+        for appid, appname in conflicting_apps.items():
+            print(f"Name of {appid} changed from {database_apps[appid]} to {appname}")
+            cls.cur.execute(
+                "DELETE FROM apps WHERE appID = ?",
+                (appid,),
             )
 
-            if appid in database_apps:
-                if appname != database_apps[appid]:
-                    print(
-                        f"Name of {appid} changed from {database_apps[appid]} to {appname}"
-                    )
-                    cls.cur.execute(
-                        "DELETE FROM apps WHERE appID = ?",
-                        (appid,),
-                    )
+        # Apps that are not in the database
+        new_apps = list(steam_apps.keys() - database_apps.keys())
 
+        for appid in new_apps:
+            print(f"Adding {appid} to the database")
             cls.cur.execute(
                 "INSERT OR IGNORE INTO apps (appID, name)VALUES (?, ?)",
-                (appid, appname),
+                (appid, steam_apps[appid]),
             )
+
         print("Committing changes")
         cls.con.commit()
 
@@ -203,6 +204,5 @@ class Database:
         cls.con.close()
 
 
-# TODO: Allow an easy way to stop the script
 if __name__ == "__main__":
     Database.main()
