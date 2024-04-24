@@ -5,8 +5,8 @@ import requests
 from selenium.common import NoSuchElementException
 from selenium.webdriver.common.by import By
 
-from exit_listener import ExitListener
-from webdriver import Webdriver
+from src.exit_listener import ExitListener
+from src.webdriver import Webdriver
 
 
 class Steam:
