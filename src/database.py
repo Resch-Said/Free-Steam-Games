@@ -77,14 +77,14 @@ class Database:
                 response_success = True
             except TypeError:
                 print(
-                    f"Error in retrieving {appid}. Response was: {response.text} Retrying in 60 seconds"
+                    f"Error in retrieving {appid}. Response was: {response.text} Retrying in 120 seconds"
                 )
-                sleep(70)
+                sleep(120)
             except JSONDecodeError:
                 print(
-                    f"Error in retrieving {appid}. JSONDecodeError Retrying in 60 seconds"
+                    f"Error in retrieving {appid}. JSONDecodeError Retrying in 120 seconds"
                 )
-                sleep(70)
+                sleep(120)
 
         app_type = None
 
