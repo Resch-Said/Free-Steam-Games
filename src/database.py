@@ -45,22 +45,6 @@ class Database:
         return appids
 
     @classmethod
-    def remove_outdated_apps(cls):
-        database_appids = cls.get_appids()
-        steam_appids = Steam.get_app_list()[0]
-
-        for appid in database_appids:
-            if ExitListener.get_exit_flag():
-                break
-
-            print(f"Checking if {appid} is still existing")
-            if appid not in steam_appids:
-                print(f"Removing {appid}")
-                cls.cur.execute("DELETE FROM apps WHERE appID = ?", (appid,))
-        print("Committing changes")
-        cls.con.commit()
-
-    @classmethod
     def add_new_apps_to_database(cls):
 
         appids, appnames = Steam.get_app_list()
@@ -187,7 +171,6 @@ class Database:
         Webdriver.create_steam_cookies()
 
         cls.create_database()
-        cls.remove_outdated_apps()
         cls.add_new_apps_to_database()
         appids = cls.get_app_ids_to_update()
         for index, appid in enumerate(appids):
