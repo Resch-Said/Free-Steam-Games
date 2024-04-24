@@ -47,7 +47,6 @@ class Database:
 
     @classmethod
     def add_new_apps_to_database(cls):
-
         appids, appnames = Steam.get_app_list()
 
         for appid, appname in zip(appids, appnames):
@@ -55,7 +54,7 @@ class Database:
                 break
 
             print(
-                f"Checking: {len(appids) - appids.index(appid)} apps left to check",
+                f"{len(appids) - appids.index(appid)} apps left to check",
                 end="\r",
             )
             cls.cur.execute(
