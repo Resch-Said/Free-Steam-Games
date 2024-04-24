@@ -46,8 +46,7 @@ class Database:
         return appids
 
     @classmethod
-    def get_apps_not_in_database(cls, steam_apps):
-        database_apps = cls.get_apps()
+    def get_apps_not_in_database(cls, steam_apps, database_apps):
         new_apps = steam_apps.keys() - database_apps.keys()
         return new_apps
 
@@ -66,8 +65,8 @@ class Database:
         }
 
     @classmethod
-    def add_new_apps_to_database(cls, steam_apps):
-        new_apps = cls.get_apps_not_in_database(steam_apps)
+    def add_new_apps_to_database(cls, steam_apps, database_apps):
+        new_apps = cls.get_apps_not_in_database(steam_apps, database_apps)
 
         for appid in new_apps:
             print(f"Adding {appid} to the database")
@@ -199,7 +198,7 @@ class Database:
         steam_apps = Steam.get_apps()
         database_apps = cls.get_apps()
 
-        cls.add_new_apps_to_database(steam_apps)
+        cls.add_new_apps_to_database(steam_apps, database_apps)
         cls.update_conflicting_apps(steam_apps, database_apps)
 
         appids = cls.get_app_ids_to_update()
