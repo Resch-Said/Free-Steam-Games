@@ -103,7 +103,7 @@ class Steam:
             print(f"Redeeming: {appnames[subids.index(subid)]} ({subid})")
             if Steam.activate_free_game(subid):
                 print("Success")
-                Database.update_app_redeemed(appids[subids.index(subid)])
+                Database.update_redeemed(appids[subids.index(subid)])
             else:
                 timer = cls.rate_limit_retrying_time
                 while timer > 0:

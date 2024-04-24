@@ -164,7 +164,7 @@ class Database:
         cls.con.commit()
 
     @classmethod
-    def update_app_redeemed(cls, appid):
+    def update_redeemed(cls, appid):
         cls.cur.execute("UPDATE apps SET is_redeemed = ? WHERE appID = ?", (1, appid))
         cls.con.commit()
 
@@ -182,7 +182,8 @@ class Database:
             FROM apps 
             WHERE is_free = 1 
             AND is_redeemed = 0 
-            AND subID is not null 
+            AND subID is not null
+            AND subID != -1
             AND (type is "game" or type is "dlc")
             AND (main_game_id is null or main_game_id IN (SELECT appID FROM apps WHERE is_redeemed = 1))
             """
@@ -195,7 +196,9 @@ class Database:
 
     @classmethod
     def main(cls):
-        Webdriver.create_steam_cookies()
+
+        if not Webdriver.check_if_user_is_logged_in():
+            Webdriver.create_steam_cookies()
         cls.create_database()
 
         steam_apps = Steam.get_apps()

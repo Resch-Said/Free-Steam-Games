@@ -73,8 +73,8 @@ class Webdriver:
         driver = cls.load_chrome_driver()
         driver.get(cls.login_url)
         try:
+            # Wait until user is logged in
             element = WebDriverWait(driver, 600).until(
-                # Wait until user is logged in
                 EC.presence_of_element_located((By.ID, cls.user_logged_in_id))
             )
         finally:
@@ -93,6 +93,20 @@ class Webdriver:
         driver = Webdriver.load_chrome_driver()
         driver.get("https://store.steampowered.com/")
         driver.quit()
+
+    @classmethod
+    def check_if_user_is_logged_in(cls):
+        driver = cls.load_chrome_driver(hidden=True)
+        driver.get(cls.steam_url)
+        try:
+            # Check if user is logged in
+            driver.find_element(By.ID, cls.user_logged_in_id)
+            print("User is logged in")
+            return True
+        except:
+            return False
+        finally:
+            driver.quit()
 
 
 if __name__ == "__main__":
