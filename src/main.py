@@ -9,13 +9,7 @@ def main():
     ExitListener.start()
 
     while True:
-        if ExitListener.get_exit_flag():
-            break
-
         break_time = 8 * 60 * 60  # seconds
-
-        if ExitListener.get_exit_flag():
-            break
 
         Database.main()
         if ExitListener.get_exit_flag():
