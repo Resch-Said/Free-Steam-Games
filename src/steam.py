@@ -52,12 +52,9 @@ class Steam:
         try:
             if driver.find_element(By.CLASS_NAME, "already_in_library"):
                 print(" Already owned. Can't retrive subid")
-                driver.quit()
-                return -1
+                subid = -1
         except NoSuchElementException:
             pass
-        finally:
-            driver.quit()
 
         try:
             subid_element = driver.find_element(
@@ -66,9 +63,8 @@ class Steam:
             subid = subid_element.get_attribute("onclick").split(",")[0].split(" ")[1]
         except NoSuchElementException:
             print(f"NoSuchElementException occurred: Probably not free.")
-        finally:
-            driver.quit()
 
+        driver.quit()
         return subid
 
     @classmethod
