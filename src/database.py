@@ -35,6 +35,12 @@ class Database:
         return appids
 
     @classmethod
+    def get_app_name(cls, appid):
+        cls.cur.execute("SELECT name FROM apps WHERE appID = ?", (appid,))
+        appname = cls.cur.fetchone()
+        return appname[0]
+
+    @classmethod
     def get_app_ids_to_update(cls):
         # Only update games, dlcs and entries that have not been updated yet
         cls.cur.execute(
@@ -45,15 +51,28 @@ class Database:
         appids = [app[0] for app in appids]
         return appids
 
+    # TODO: Check if name of appid changed and if yes remove the entry and add it again
     @classmethod
     def add_new_apps_to_database(cls):
-        appids, appnames = Steam.get_app_list()
+        steam_appids, steam_appnames = Steam.get_app_list()
 
-        for appid, appname in zip(appids, appnames):
+        for appid, appname in zip(steam_appids, steam_appnames):
             if ExitListener.get_exit_flag():
                 break
 
-            print(f"{len(appids) - appids.index(appid)} apps left to check")
+            print(f"{len(steam_appids) - steam_appids.index(appid)} apps left to check")
+
+            if appid in cls.get_appids() and appname == cls.get_app_name(appid):
+                continue
+            elif appid in cls.get_appids() and appname != cls.get_app_name(appid):
+                print(
+                    f"Name of {appid} changed from {cls.get_app_name(appid)} to {appname}"
+                )
+                cls.cur.execute(
+                    "DELETE FROM apps WHERE appID = ?",
+                    (appid,),
+                )
+
             cls.cur.execute(
                 "INSERT OR IGNORE INTO apps (appID, name)VALUES (?, ?)",
                 (appid, appname),
