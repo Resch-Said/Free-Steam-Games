@@ -225,9 +225,14 @@ class Database:
                 break
 
             print(f"Name of {appid} changed from {database_apps[appid]} to {appname}")
+
+            # Delete old entry and add as a new one.
+            cls.cur.execute("DELETE FROM apps WHERE appID = ?", (appid,))
             cls.cur.execute(
-                "UPDATE apps SET name = ? WHERE appID = ?", (appname, appid)
+                "INSERT OR IGNORE INTO apps (appID, name)VALUES (?, ?)",
+                (appid, appname),
             )
+
             cls.con.commit()
 
 
