@@ -51,13 +51,12 @@ class Database:
         return new_apps
 
     @classmethod
-    def get_conflicting_apps(cls, steam_apps):
+    def get_conflicting_apps(cls, steam_apps, database_apps):
         """
-
         :param steam_apps:
+        :param database_apps:
         :return: dict of appid and appname that are in the database but have a different name in the steam_apps
         """
-        database_apps = cls.get_apps()
         return {
             appid: appname
             for appid, appname in steam_apps.items()
@@ -219,7 +218,7 @@ class Database:
 
     @classmethod
     def update_conflicting_apps(cls, steam_apps, database_apps):
-        conflicting_apps = cls.get_conflicting_apps(steam_apps)
+        conflicting_apps = cls.get_conflicting_apps(steam_apps, database_apps)
 
         for appid, appname in conflicting_apps.items():
             if ExitListener.get_exit_flag():
