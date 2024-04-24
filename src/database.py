@@ -54,7 +54,10 @@ class Database:
             if ExitListener.get_exit_flag():
                 break
 
-            print(f"Checking {appname} ({appid})")
+            print(
+                f"Checking: {len(appids) - appids.index(appid)} apps left to check",
+                end="\r",
+            )
             cls.cur.execute(
                 "INSERT OR IGNORE INTO apps (appID, name)VALUES (?, ?)",
                 (appid, appname),

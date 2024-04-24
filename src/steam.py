@@ -51,7 +51,7 @@ class Steam:
 
         try:
             if driver.find_element(By.CLASS_NAME, "already_in_library"):
-                print("Already owned. Can't retrive subid")
+                print(" Already owned. Can't retrive subid")
                 subid = -1
         except NoSuchElementException:
             pass
