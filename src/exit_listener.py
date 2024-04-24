@@ -7,7 +7,7 @@ class ExitListener:
     @classmethod
     def listener_quit(cls):
         while not cls.get_exit_flag():
-            result = input("Press 'q' to exit the program.")
+            result = input("Press 'q' to exit the program.\n")
             if result == "q":
                 cls.set_exit_flag(True)
                 print("\nExiting the program. Please wait...")
@@ -28,3 +28,5 @@ class ExitListener:
 
 if __name__ == "__main__":
     ExitListener.start()
+    while not ExitListener.get_exit_flag():
+        pass
