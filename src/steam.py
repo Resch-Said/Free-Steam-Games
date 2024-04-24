@@ -60,8 +60,8 @@ class Steam:
             )
 
             subid = subid_element.get_attribute("onclick").split(",")[0].split(" ")[1]
-        except NoSuchElementException as e:
-            print(f"NoSuchElementException occurred: {e}")
+        except NoSuchElementException:
+            print(f"NoSuchElementException occurred: Probably not free.")
         finally:
             driver.quit()
 
