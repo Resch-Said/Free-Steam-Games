@@ -18,7 +18,7 @@ class Database:
     con = sqlite3.connect("../database" + "/steam.db")
     cur = con.cursor()
     app_detail_url = "https://store.steampowered.com/api/appdetails?appids="
-    app_detail_retrying_time = 240  # Seconds
+    app_detail_retrying_time = 60 * 4  # Seconds
 
     @classmethod
     def create_database(cls):
@@ -46,25 +46,28 @@ class Database:
         return appids
 
     @classmethod
-    def add_new_apps_to_database(cls):
-        steam_apps = Steam.get_apps()
+    def get_apps_not_in_database(cls, steam_apps):
         database_apps = cls.get_apps()
+        new_apps = steam_apps.keys() - database_apps.keys()
+        return new_apps
 
-        # Apps that changed their names since the last update
-        conflicting_apps = {
+    @classmethod
+    def get_conflicting_apps(cls, steam_apps):
+        """
+
+        :param steam_apps:
+        :return: dict of appid and appname that are in the database but have a different name in the steam_apps
+        """
+        database_apps = cls.get_apps()
+        return {
             appid: appname
             for appid, appname in steam_apps.items()
             if appid in database_apps and appname != database_apps[appid]
         }
-        for appid, appname in conflicting_apps.items():
-            print(f"Name of {appid} changed from {database_apps[appid]} to {appname}")
-            cls.cur.execute(
-                "DELETE FROM apps WHERE appID = ?",
-                (appid,),
-            )
 
-        # Apps that are not in the database
-        new_apps = list(steam_apps.keys() - database_apps.keys())
+    @classmethod
+    def add_new_apps_to_database(cls, steam_apps):
+        new_apps = cls.get_apps_not_in_database(steam_apps)
 
         for appid in new_apps:
             print(f"Adding {appid} to the database")
@@ -191,9 +194,14 @@ class Database:
     @classmethod
     def main(cls):
         Webdriver.create_steam_cookies()
-
         cls.create_database()
-        cls.add_new_apps_to_database()
+
+        steam_apps = Steam.get_apps()
+        database_apps = cls.get_apps()
+
+        cls.add_new_apps_to_database(steam_apps)
+        cls.update_conflicting_apps(steam_apps, database_apps)
+
         appids = cls.get_app_ids_to_update()
         for index, appid in enumerate(appids):
             if ExitListener.get_exit_flag():
@@ -203,6 +211,17 @@ class Database:
             remaining_apps = len(appids) - index
             print(":\t" + f" {remaining_apps} apps left to update")
         cls.con.close()
+
+    @classmethod
+    def update_conflicting_apps(cls, steam_apps, database_apps):
+        conflicting_apps = cls.get_conflicting_apps(steam_apps)
+
+        for appid, appname in conflicting_apps.items():
+            print(f"Name of {appid} changed from {database_apps[appid]} to {appname}")
+            cls.cur.execute(
+                "UPDATE apps SET name = ? WHERE appID = ?", (appname, appid)
+            )
+            cls.con.commit()
 
 
 if __name__ == "__main__":
