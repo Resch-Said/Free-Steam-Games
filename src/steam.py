@@ -71,6 +71,8 @@ class Steam:
         except NoSuchElementException:
             pass
 
+        driver.quit()
+
         return subid
 
     @classmethod
