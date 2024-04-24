@@ -14,6 +14,7 @@ class Steam:
     appdetails_url = "https://store.steampowered.com/api/appdetails?appids="
     steam_app_url = "https://store.steampowered.com/app/"
     free_license_url = "https://store.steampowered.com/freelicense/addfreelicense/"
+    rate_limit_retrying_time = 61  # Minutes.
 
     @classmethod
     def get_apps(cls):
@@ -112,7 +113,7 @@ class Steam:
                 print("Success")
                 Database.update_app_redeemed(appids[subids.index(subid)])
             else:
-                timer = 61
+                timer = cls.rate_limit_retrying_time
                 while timer > 0:
                     if ExitListener.get_exit_flag():
                         break

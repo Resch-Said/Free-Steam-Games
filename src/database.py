@@ -18,6 +18,7 @@ class Database:
     con = sqlite3.connect("../database" + "/steam.db")
     cur = con.cursor()
     app_detail_url = "https://store.steampowered.com/api/appdetails?appids="
+    app_detail_retrying_time = 140
 
     @classmethod
     def create_database(cls):
@@ -90,14 +91,14 @@ class Database:
                 response_success = True
             except TypeError:
                 print(
-                    f"Error in retrieving {appid}. Response was: {response.text} Retrying in 120 seconds"
+                    f"Error in retrieving {appid}. Response was: {response.text} Retrying in {cls.app_detail_retrying_time} seconds"
                 )
-                sleep(120)
+                sleep(cls.app_detail_retrying_time)
             except JSONDecodeError:
                 print(
-                    f"Error in retrieving {appid}. JSONDecodeError Retrying in 120 seconds"
+                    f"Error in retrieving {appid}. JSONDecodeError Retrying in {cls.app_detail_retrying_time} seconds"
                 )
-                sleep(120)
+                sleep(cls.app_detail_retrying_time)
 
         app_type = None
 
