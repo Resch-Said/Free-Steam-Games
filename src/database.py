@@ -5,10 +5,10 @@ from time import sleep
 
 import requests
 
-from better_path import BetterPath
-from exit_listener import ExitListener
-from steam import Steam
-from webdriver import Webdriver
+from src.better_path import BetterPath
+from src.exit_listener import ExitListener
+from src.steam import Steam
+from src.webdriver import Webdriver
 
 
 class Database:

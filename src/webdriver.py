@@ -6,8 +6,8 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
 
-from better_path import BetterPath
-from exit_listener import ExitListener
+from src.better_path import BetterPath
+from src.exit_listener import ExitListener
 
 
 class Webdriver:
