@@ -16,18 +16,15 @@ class Steam:
     free_license_url = "https://store.steampowered.com/freelicense/addfreelicense/"
 
     @classmethod
-    def get_app_list(cls):
+    def get_apps(cls):
         """
-        :return: Returns a tuple containing two lists\n
-        [0] app_ids\n
-        [1] app_names
+        :return: Returns a dictionary with the appid as key and the appname as value
         """
         response = requests.get(cls.applist_url)
         data = json.loads(response.text)
 
-        app_ids = [app["appid"] for app in data["applist"]["apps"]]
-        app_names = [app["name"] for app in data["applist"]["apps"]]
-        return app_ids, app_names
+        app_dict = {app["appid"]: app["name"] for app in data["applist"]["apps"]}
+        return app_dict
 
     @classmethod
     def get_app_details(cls, appid):
@@ -43,7 +40,9 @@ class Steam:
     def get_subid(cls, appid):
         """
         :param appid:
-        :return: Returns the subid. If the game is already owned, it returns -1. If the game is not free, it returns None
+        :return: Returns the subid.
+            If the game is already owned, it returns -1.
+            If the game is not free, it returns None
         """
         subid = None
         driver = Webdriver.load_chrome_driver(hidden=True)

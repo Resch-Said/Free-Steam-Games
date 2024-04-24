@@ -28,17 +28,10 @@ class Database:
         cls.con.commit()
 
     @classmethod
-    def get_appids(cls):
-        cls.cur.execute("SELECT appID FROM apps")
-        appids = cls.cur.fetchall()
-        appids = [app[0] for app in appids]
-        return appids
-
-    @classmethod
-    def get_app_name(cls, appid):
-        cls.cur.execute("SELECT name FROM apps WHERE appID = ?", (appid,))
-        appname = cls.cur.fetchone()
-        return appname[0]
+    def get_apps(cls):
+        cls.cur.execute("SELECT appID, name FROM apps")
+        apps = cls.cur.fetchall()
+        return dict(apps)
 
     @classmethod
     def get_app_ids_to_update(cls):
@@ -51,27 +44,28 @@ class Database:
         appids = [app[0] for app in appids]
         return appids
 
-    # TODO: Check if name of appid changed and if yes remove the entry and add it again
     @classmethod
     def add_new_apps_to_database(cls):
-        steam_appids, steam_appnames = Steam.get_app_list()
+        steam_apps = Steam.get_apps()
+        database_apps = cls.get_apps()
 
-        for appid, appname in zip(steam_appids, steam_appnames):
+        for appid, appname in steam_apps.items():
             if ExitListener.get_exit_flag():
                 break
 
-            print(f"{len(steam_appids) - steam_appids.index(appid)} apps left to check")
+            print(
+                f"{len(steam_apps) - list(steam_apps.keys()).index(appid)} apps left to check"
+            )
 
-            if appid in cls.get_appids() and appname == cls.get_app_name(appid):
-                continue
-            elif appid in cls.get_appids() and appname != cls.get_app_name(appid):
-                print(
-                    f"Name of {appid} changed from {cls.get_app_name(appid)} to {appname}"
-                )
-                cls.cur.execute(
-                    "DELETE FROM apps WHERE appID = ?",
-                    (appid,),
-                )
+            if appid in database_apps:
+                if appname != database_apps[appid]:
+                    print(
+                        f"Name of {appid} changed from {database_apps[appid]} to {appname}"
+                    )
+                    cls.cur.execute(
+                        "DELETE FROM apps WHERE appID = ?",
+                        (appid,),
+                    )
 
             cls.cur.execute(
                 "INSERT OR IGNORE INTO apps (appID, name)VALUES (?, ?)",
