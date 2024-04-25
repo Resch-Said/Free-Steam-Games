@@ -45,7 +45,6 @@ class Webdriver:
             print("OS not supported")
             ExitListener.set_exit_flag(True)
 
-        cls.update_cookies(driver)  # Making sure cookies are up to date
         return driver
 
     @classmethod
@@ -77,6 +76,7 @@ class Webdriver:
             element = WebDriverWait(driver, 600).until(
                 EC.presence_of_element_located((By.ID, cls.user_logged_in_id))
             )
+
         finally:
             cls.update_cookies(driver)
             driver.quit()
@@ -99,7 +99,6 @@ class Webdriver:
         driver = cls.load_chrome_driver(hidden=True)
         driver.get(cls.steam_url)
         try:
-            # Check if user is logged in
             driver.find_element(By.ID, cls.user_logged_in_id)
             print("User is logged in")
             return True
