@@ -2,7 +2,7 @@ import json
 from time import sleep
 
 import requests
-from selenium.common import NoSuchElementException
+from selenium.common import NoSuchElementException, TimeoutException
 from selenium.webdriver.common.by import By
 
 from exit_listener import ExitListener
@@ -15,6 +15,7 @@ class Steam:
     steam_app_url = "https://store.steampowered.com/app/"
     free_license_url = "https://store.steampowered.com/freelicense/addfreelicense/"
     rate_limit_retrying_time = 61  # Minutes.
+    timeout_exception_retrying_time = 60  # Seconds.
 
     @classmethod
     def get_apps(cls):
@@ -47,7 +48,18 @@ class Steam:
         """
         subid = None
         driver = Webdriver.load_chrome_driver(hidden=True)
-        driver.get(cls.steam_app_url + str(appid))
+
+        is_website_reachable = False
+
+        while not is_website_reachable:
+            if ExitListener.get_exit_flag():
+                break
+            try:
+                driver.get(cls.steam_app_url + str(appid))
+                is_website_reachable = True
+            except TimeoutException:
+                print("TimeoutException occurred")
+                sleep(cls.timeout_exception_retrying_time)
 
         try:
             if driver.find_element(By.CLASS_NAME, "age_gate"):
