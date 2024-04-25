@@ -50,8 +50,14 @@ class Steam:
         driver.get(cls.steam_app_url + str(appid))
 
         try:
+            if driver.find_element(By.CLASS_NAME, "age_gate"):
+                cls.auto_accept_age_gate(driver)
+        except NoSuchElementException:
+            pass
+
+        try:
             if driver.find_element(By.CLASS_NAME, "already_in_library"):
-                print(" Already owned. Can't retrive subid")
+                print("Already owned. Can't retrive subid")
                 subid = -1
         except NoSuchElementException:
             pass
@@ -63,6 +69,8 @@ class Steam:
             subid = subid_element.get_attribute("onclick").split(",")[0].split(" ")[1]
         except NoSuchElementException:
             print(f"NoSuchElementException occurred: Probably not free.")
+
+        Webdriver.update_cookies(driver)
 
         driver.quit()
         return subid
@@ -116,6 +124,21 @@ class Steam:
                     )
                     sleep(60)
                     timer -= 1
+
+    @classmethod
+    def auto_accept_age_gate(cls, driver):
+        driver.find_element(By.ID, "ageYear").send_keys("1900")
+        driver.find_element(By.CLASS_NAME, "btnv6_blue_hoverfade").click()
+
+        # Wait until next page is loaded
+        age_check_passed = False
+
+        while not age_check_passed:
+            try:
+                driver.find_element(By.CLASS_NAME, "game_area_purchase_game ")
+                age_check_passed = True
+            except NoSuchElementException:
+                sleep(1)
 
 
 if __name__ == "__main__":
