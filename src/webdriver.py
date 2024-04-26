@@ -2,6 +2,7 @@ import json
 import os
 
 from selenium import webdriver
+from selenium.common import NoSuchElementException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
@@ -17,7 +18,6 @@ class Webdriver:
     browser_path = BetterPath.get_absolute_path(
         "../selenium/webdriver"
     )  # user-data-dir requires absolute path
-    cookies_path = "../selenium/cookies.json"
     user_logged_in_id = "account_pulldown"
 
     service = webdriver.ChromeService(
@@ -48,27 +48,7 @@ class Webdriver:
         return driver
 
     @classmethod
-    def get_steam_sessionid(cls):
-        if os.path.isfile(cls.cookies_path):
-            with open(cls.cookies_path, "r") as f:
-                cookies = json.loads(f.read())
-                for cookie in cookies:
-                    if cookie["name"] == "sessionid":
-                        return cookie["value"]
-        return None
-
-    @classmethod
-    def get_cookies_steam_login_secure(cls):
-        if os.path.isfile(cls.cookies_path):
-            with open(cls.cookies_path, "r") as f:
-                cookies = json.loads(f.read())
-                for cookie in cookies:
-                    if cookie["name"] == "steamLoginSecure":
-                        return cookie["value"]
-        return None
-
-    @classmethod
-    def create_steam_cookies(cls):
+    def open_steam_login_page(cls):
         driver = cls.load_chrome_driver()
         driver.get(cls.login_url)
         try:
@@ -78,18 +58,11 @@ class Webdriver:
             )
 
         finally:
-            cls.update_cookies(driver)
             driver.quit()
 
     @classmethod
-    def update_cookies(cls, driver):
-        cookies = driver.get_cookies()
-        with open(cls.cookies_path, "w") as f:
-            f.write(json.dumps(cookies))
-
-    @classmethod
     def main(cls):
-        Webdriver.create_steam_cookies()
+        Webdriver.open_steam_login_page()
         driver = Webdriver.load_chrome_driver()
         driver.get("https://store.steampowered.com/")
         driver.quit()
@@ -102,7 +75,7 @@ class Webdriver:
             driver.find_element(By.ID, cls.user_logged_in_id)
             print("User is logged in")
             return True
-        except:
+        except NoSuchElementException:
             return False
         finally:
             driver.quit()

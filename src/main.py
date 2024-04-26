@@ -1,3 +1,4 @@
+import threading
 from time import sleep
 
 from database import Database
@@ -10,12 +11,13 @@ def main():
 
     while True:
         break_time = 8 * 60 * 60  # seconds
-
-        Database.main()
         if ExitListener.get_exit_flag():
             break
 
+        Database.main()
         Steam.main()
+
+        print("Done!")
         while break_time > 0:
             if ExitListener.get_exit_flag():
                 break
@@ -26,7 +28,8 @@ def main():
                 end="\r",
             )
             sleep(1)
-    print("Done!")
+
+    input("Press Enter to close...")
 
 
 if __name__ == "__main__":

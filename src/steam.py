@@ -15,7 +15,16 @@ class Steam:
     steam_app_url = "https://store.steampowered.com/app/"
     free_license_url = "https://store.steampowered.com/freelicense/addfreelicense/"
     rate_limit_retrying_time = 61  # Minutes.
+    max_retries = 3
+
     timeout_exception_retrying_time = 60  # Seconds.
+
+    in_library_class = "already_in_library"
+    age_gate_class = "age_gate"
+    free_games_xpath = [
+        f"//*[starts-with(@onclick, 'AddFreeLicense')]",
+        f"/html/body/div[1]/div[7]/div[6]/div[3]/div[2]/div[1]/div[4]/div[2]/div[1]/div/div/div[2]/div/div/a",
+    ]
 
     @classmethod
     def get_apps(cls):
@@ -29,31 +38,46 @@ class Steam:
         return app_dict
 
     @classmethod
-    def get_app_details(cls, appid):
-        response = requests.get(cls.appdetails_url + str(appid))
-        data = json.loads(response.text)
+    def activate_free_game(cls, appid):
+        success = False
 
-        if not data[str(appid)]["success"]:
-            return None
-
-        return data[str(appid)]["data"]
-
-    @classmethod
-    def get_subid(cls, appid):
-        """
-        :param appid:
-        :return: Returns the subid.
-            If the game is already owned, it returns -1.
-            If the game is not free, it returns None
-        """
-        subid = None
         driver = Webdriver.load_chrome_driver(hidden=True)
 
+        cls.wait_until_website_reachable(appid, driver)
+        cls.auto_accept_age_gate(driver)
+
+        for xpath in cls.free_games_xpath:
+            try:
+                driver.find_element(By.XPATH, xpath).click()
+                break
+            except NoSuchElementException:
+                pass
+
+        cls.wait_until_website_reachable(appid, driver)
+        cls.auto_accept_age_gate(driver)
+
+        if cls.already_owned(driver):
+            success = True
+
+        driver.quit()
+        return success
+
+    @classmethod
+    def already_owned(cls, driver):
+        try:
+            driver.find_element(By.CLASS_NAME, cls.in_library_class)
+            return True
+        except NoSuchElementException:
+            return False
+
+    @classmethod
+    def wait_until_website_reachable(cls, appid, driver):
         is_website_reachable = False
 
         while not is_website_reachable:
             if ExitListener.get_exit_flag():
                 break
+
             try:
                 driver.get(cls.steam_app_url + str(appid))
                 is_website_reachable = True
@@ -61,89 +85,51 @@ class Steam:
                 print("TimeoutException occurred")
                 sleep(cls.timeout_exception_retrying_time)
 
-        try:
-            if driver.find_element(By.CLASS_NAME, "age_gate"):
-                cls.auto_accept_age_gate(driver)
-        except NoSuchElementException:
-            pass
-
-        try:
-            if driver.find_element(By.CLASS_NAME, "already_in_library"):
-                print("Already owned. Can't retrive subid")
-                subid = -1
-        except NoSuchElementException:
-            pass
-
-        try:
-            subid_element = driver.find_element(
-                By.XPATH, "//*[starts-with(@onclick, 'AddFreeLicense')]"
-            )
-            subid = subid_element.get_attribute("onclick").split(",")[0].split(" ")[1]
-        except NoSuchElementException:
-            print(f"NoSuchElementException occurred: Probably not free.")
-
-        Webdriver.update_cookies(driver)
-
-        driver.quit()
-        return subid
-
-    @classmethod
-    def activate_free_game(cls, subid):
-        sessionid = Webdriver.get_steam_sessionid()
-
-        if Webdriver.get_cookies_steam_login_secure() is None:
-            Webdriver.create_steam_cookies()
-
-        url = cls.free_license_url + str(subid)
-
-        steam_login_secure = Webdriver.get_cookies_steam_login_secure()
-        headers = {
-            "accept": "*/*",
-            "accept-language": "de,de-DE;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6",
-            "cookie": f"sessionid={sessionid}; steamLoginSecure={steam_login_secure}",
-        }
-        data = {"ajax": "true", "sessionid": {sessionid}}
-        response = requests.post(url, headers=headers, data=data)
-        sleep(5)
-        if response.status_code == 200:
-            return True
-        else:
-            print(response.text)
-            return False
-
     @classmethod
     def main(cls):
         from database import Database
 
-        appids, subids, appnames = Database.get_free_games_to_redeem()
-        for subid in subids:
+        current_retry = 0
+
+        appids, appnames = Database.get_free_games_to_redeem()
+        for appid in appids:
             if ExitListener.get_exit_flag():
                 break
 
-            print(f"Redeeming: {appnames[subids.index(subid)]} ({subid})")
-            if Steam.activate_free_game(subid):
+            print(f"Redeeming: {appnames[appids.index(appid)]} ({appid})")
+            if Steam.activate_free_game(appid):
                 print("Success")
-                Database.update_redeemed(appids[subids.index(subid)])
+                Database.update_redeemed(appid, 1)
             else:
+                Database.update_redeemed(appid, 0)
+                current_retry += 1
+                print(f"Failed: {current_retry}/{cls.max_retries}")
                 timer = cls.rate_limit_retrying_time
-                while timer > 0:
+
+                while timer > 0 and current_retry >= cls.max_retries:
                     if ExitListener.get_exit_flag():
                         break
-
                     print(
                         f"Failed. Probably rate Limited. Taking a break: {timer} Minutes remaining",
                         end="\r",
                     )
-                    sleep(60)
+                    sleep(60)  # 1 minute
                     timer -= 1
+
+                if timer <= 0:
+                    current_retry = 0
 
     @classmethod
     def auto_accept_age_gate(cls, driver):
+        age_check_passed = False
+
+        if not cls.age_gate_visible(driver):
+            return
+
         driver.find_element(By.ID, "ageYear").send_keys("1900")
         driver.find_element(By.CLASS_NAME, "btnv6_blue_hoverfade").click()
 
         # Wait until next page is loaded
-        age_check_passed = False
 
         while not age_check_passed:
             try:
@@ -151,6 +137,14 @@ class Steam:
                 age_check_passed = True
             except NoSuchElementException:
                 sleep(1)
+
+    @classmethod
+    def age_gate_visible(cls, driver):
+        try:
+            driver.find_element(By.CLASS_NAME, cls.age_gate_class)
+            return True
+        except NoSuchElementException:
+            return False
 
 
 if __name__ == "__main__":
