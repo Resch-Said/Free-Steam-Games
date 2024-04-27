@@ -1,35 +1,65 @@
 import threading
+from datetime import datetime, timedelta
 from time import sleep
 
 from database import Database
 from exit_listener import ExitListener
 from steam import Steam
 
+break_time_lock = threading.Lock()
 
+
+def break_time(break_time_hours=8):
+    with break_time_lock:
+        if break_time_hours <= 1:
+            break_time_hours = 1.01
+
+        end_time = datetime.now() + timedelta(hours=break_time_hours)
+        print(
+            "\r",
+            f"Taking a break for {break_time_hours} hours. Ending at {str(end_time).split('.')[0]}",
+        )
+
+    while datetime.now() < end_time:
+        if ExitListener.get_exit_flag():
+            break
+        sleep(1)
+
+
+def add_steam_games():
+    while True:
+        if ExitListener.get_exit_flag():
+            break
+        Steam.main()
+        break_time()
+
+
+def update_database():
+    while True:
+        if ExitListener.get_exit_flag():
+            break
+        Database.main()
+        break_time()
+
+
+# TODO: Make Database and Webdriver threadsafe
 def main():
     ExitListener.start()
 
-    while True:
-        break_time = 8 * 60 * 60  # seconds
-        if ExitListener.get_exit_flag():
-            break
+    if not Steam.check_if_user_is_logged_in():
+        Steam.open_steam_login_page()
+    Database.create_database()
 
-        Database.main()
-        Steam.main()
+    database_thread = threading.Thread(target=update_database)
+    steam_thread = threading.Thread(target=add_steam_games)
 
-        print("Done!")
-        while break_time > 0:
-            if ExitListener.get_exit_flag():
-                break
+    database_thread.start()
+    steam_thread.start()
 
-            break_time -= 1
-            print(
-                f"Taking a break for {break_time} seconds ({round((break_time / 60 / 60), 2)} hours)",
-                end="\r",
-            )
-            sleep(1)
+    database_thread.join()
+    steam_thread.join()
 
-    input("Press Enter to close...")
+    print("Done!")
 
 
 if __name__ == "__main__":

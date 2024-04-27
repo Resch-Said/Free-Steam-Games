@@ -1,5 +1,7 @@
 import json
 import sqlite3
+import threading
+from contextlib import closing
 from datetime import datetime
 from json import JSONDecodeError
 from time import sleep
@@ -9,59 +11,60 @@ import requests
 from better_path import BetterPath
 from exit_listener import ExitListener
 from steam import Steam
-from webdriver import Webdriver
 
 
 class Database:
-    BetterPath.create_path("../database")
+    lock = threading.Lock()
 
-    # con = sqlite3.connect("../database" + "/steam.db")
-    # cur = con.cursor()
+    BetterPath.create_path("../database")
+    db_path = "../database/steam.db"
+
     app_detail_url = "https://store.steampowered.com/api/appdetails?appids="
     app_detail_retrying_time = 60 * 4  # Seconds
 
+    @staticmethod
+    def get_connection():
+        return sqlite3.connect(Database.db_path)
+
+    @classmethod
+    def execute_sql(cls, sql, values=None):
+        with cls.lock:
+            with closing(cls.get_connection()) as con:
+                with closing(con.cursor()) as cur:
+                    if values:
+                        cur.execute(sql, values)
+                    else:
+                        cur.execute(sql)
+
+                    if sql.strip().upper().startswith("SELECT"):
+                        return cur.fetchall()
+                    else:
+                        con.commit()
+
     @classmethod
     def create_database(cls):
-        con, cur = cls.get_connection()
-
-        cur.execute(
+        cls.execute_sql(
             "CREATE TABLE IF NOT EXISTS apps (appID INTEGER PRIMARY KEY, name TEXT, "
             "type TEXT, main_game_id INTEGER, success INTEGER, is_free INTEGER,"
             "is_redeemed INTEGER DEFAULT (0), redeem_failed INTEGER DEFAULT(0), last_update TEXT)"
         )
-        con.commit()
-        con.close()
-
-    @classmethod
-    def get_connection(cls):
-        con = sqlite3.connect("../database" + "/steam.db")
-        cur = con.cursor()
-        return con, cur
 
     @classmethod
     def get_apps(cls):
-        con, cur = cls.get_connection()
-
-        cur.execute("SELECT appID, name FROM apps")
-        apps = cur.fetchall()
-        con.close()
+        apps = cls.execute_sql("SELECT appID, name FROM apps")
         return dict(apps)
 
     @classmethod
-    def get_app_ids_to_update(cls):
-        con, cur = cls.get_connection()
+    def get_appids_to_update(cls):
 
         # Only update games, dlcs and entries that have not been updated yet
-        cur.execute(
+        appids = cls.execute_sql(
             "SELECT appID FROM apps "
             'WHERE is_redeemed = 0 and (type = "game" or type = "dlc") or (type is null and last_update is null) '
             "ORDER BY last_update ASC"
         )
 
-        appids = cur.fetchall()
         appids = [app[0] for app in appids]
-
-        con.close()
         return appids
 
     @classmethod
@@ -86,21 +89,16 @@ class Database:
     def add_new_apps_to_database(cls, steam_apps, database_apps):
         new_apps = cls.get_apps_not_in_database(steam_apps, database_apps)
 
-        con, cur = cls.get_connection()
-
         for appid in new_apps:
             if ExitListener.get_exit_flag():
                 break
 
             print(f"Adding {appid} to the database")
-            cur.execute(
+
+            cls.execute_sql(
                 "INSERT OR IGNORE INTO apps (appID, name)VALUES (?, ?)",
                 (appid, steam_apps[appid]),
             )
-
-        print("Committing changes")
-        con.commit()
-        con.close()
 
     @classmethod
     def update_app_detail(cls, appid):
@@ -109,7 +107,6 @@ class Database:
         response_success = False
         data = None
         data_success = None
-        con, cur = cls.get_connection()
 
         while not response_success:
             response = requests.get(url)
@@ -125,6 +122,7 @@ class Database:
                 )
                 sleep(cls.app_detail_retrying_time)
             except JSONDecodeError:
+                # TODO:FIX THIS
                 print(
                     f"Error in retrieving {appid}. JSONDecodeError Retrying in {cls.app_detail_retrying_time} seconds"
                 )
@@ -134,31 +132,39 @@ class Database:
         try:
             appname = data[str(appid)]["data"]["name"]
             print(f"Updating {appname} ({appid})", end="")
-            cur.execute("UPDATE apps SET name = ? WHERE appID = ?", (appname, appid))
+            cls.execute_sql(
+                "UPDATE apps SET name = ? WHERE appID = ?", (appname, appid)
+            )
+
         except KeyError:
             pass
 
         # Update the last update time and success
         current_date_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        cur.execute(
+        cls.execute_sql(
             "UPDATE apps SET last_update = ? WHERE appID = ?",
             (current_date_time, appid),
         )
-        cur.execute(
+
+        cls.execute_sql(
             "UPDATE apps SET success = ? WHERE appID = ?", (data_success, appid)
         )
 
         # Update the type of the app
         try:
             app_type = data[str(appid)]["data"]["type"]
-            cur.execute("UPDATE apps SET type = ? WHERE appID = ?", (app_type, appid))
+            cls.execute_sql(
+                "UPDATE apps SET type = ? WHERE appID = ?", (app_type, appid)
+            )
         except KeyError:
             pass
 
         # Update is_free
         try:
             is_free = data[str(appid)]["data"]["is_free"]
-            cur.execute("UPDATE apps SET is_free = ? WHERE appID = ?", (is_free, appid))
+            cls.execute_sql(
+                "UPDATE apps SET is_free = ? WHERE appID = ?", (is_free, appid)
+            )
 
         except KeyError:
             pass
@@ -166,37 +172,28 @@ class Database:
         # Update main_game_id
         try:
             main_game_id = data[str(appid)]["data"]["fullgame"]["appid"]
-            cur.execute(
+            cls.execute_sql(
                 "UPDATE apps SET main_game_id = ? WHERE appID = ?",
                 (main_game_id, appid),
             )
         except KeyError:
             pass
 
-        con.commit()
-        con.close()
-
     @classmethod
     def update_redeemed(cls, appid, success):
-        con, cur = cls.get_connection()
 
-        cur.execute(
+        cls.execute_sql(
             "UPDATE apps SET is_redeemed = ?, redeem_failed = ? WHERE appID = ?",
             (success, not success, appid),
         )
-        con.commit()
-        con.close()
 
     @classmethod
     def get_free_games_to_redeem(cls):
         """
-        :return: Returns a tuple containing three lists\n
-        [0] app_ids\n
-        [1] app_names
+        :return: Returns a dict of appid and appname of free games that have not been redeemed yet
         """
-        con, cur = cls.get_connection()
 
-        cur.execute(
+        response = cls.execute_sql(
             """
             SELECT appID, name 
             FROM apps 
@@ -204,21 +201,14 @@ class Database:
             AND is_redeemed = 0 
             AND (type is "game" or type is "dlc")
             AND (main_game_id is null or main_game_id IN (SELECT appID FROM apps WHERE is_redeemed = 1))
+            ORDER BY redeem_failed ASC, last_update ASC
             """
         )
-        response = cur.fetchall()
-        appids = [app[0] for app in response]
-        appnames = [app[1] for app in response]
 
-        con.close()
-        return appids, appnames
+        return dict(response)
 
     @classmethod
     def main(cls):
-
-        if not Webdriver.check_if_user_is_logged_in():
-            Webdriver.open_steam_login_page()
-        cls.create_database()
 
         steam_apps = Steam.get_apps()
         database_apps = cls.get_apps()
@@ -226,7 +216,7 @@ class Database:
         cls.add_new_apps_to_database(steam_apps, database_apps)
         cls.update_conflicting_apps(steam_apps, database_apps)
 
-        appids = cls.get_app_ids_to_update()
+        appids = cls.get_appids_to_update()
         for index, appid in enumerate(appids):
             if ExitListener.get_exit_flag():
                 break
@@ -238,23 +228,21 @@ class Database:
     @classmethod
     def update_conflicting_apps(cls, steam_apps, database_apps):
         conflicting_apps = cls.get_conflicting_apps(steam_apps, database_apps)
-        con, cur = cls.get_connection()
 
         for appid, appname in conflicting_apps.items():
             if ExitListener.get_exit_flag():
                 break
 
-            print(f"Name of {appid} changed from {database_apps[appid]} to {appname}")
+            print(
+                f'Name of {appid} changed from "{database_apps[appid]}" to "{appname}"'
+            )
 
             # Delete old entry and add as a new one.
-            cur.execute("DELETE FROM apps WHERE appID = ?", (appid,))
-            cur.execute(
+            cls.execute_sql("DELETE FROM apps WHERE appID = ?", (appid,))
+            cls.execute_sql(
                 "INSERT OR IGNORE INTO apps (appID, name)VALUES (?, ?)",
                 (appid, appname),
             )
-
-        con.commit()
-        con.close()
 
 
 if __name__ == "__main__":

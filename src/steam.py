@@ -4,6 +4,8 @@ from time import sleep
 import requests
 from selenium.common import NoSuchElementException, TimeoutException
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.wait import WebDriverWait
 
 from exit_listener import ExitListener
 from webdriver import Webdriver
@@ -12,8 +14,10 @@ from webdriver import Webdriver
 class Steam:
     applist_url = "https://api.steampowered.com/ISteamApps/GetAppList/v2/"
     appdetails_url = "https://store.steampowered.com/api/appdetails?appids="
-    steam_app_url = "https://store.steampowered.com/app/"
-    free_license_url = "https://store.steampowered.com/freelicense/addfreelicense/"
+    app_shop_url = "https://store.steampowered.com/app/"
+    steam_url = "https://store.steampowered.com/"
+    login_url = "https://store.steampowered.com/login/"
+
     rate_limit_retrying_time = 61  # Minutes.
     max_retries = 3
 
@@ -21,10 +25,37 @@ class Steam:
 
     in_library_class = "already_in_library"
     age_gate_class = "age_gate"
+    user_logged_in_id = "account_pulldown"
     free_games_xpath = [
         f"//*[starts-with(@onclick, 'AddFreeLicense')]",
         f"/html/body/div[1]/div[7]/div[6]/div[3]/div[2]/div[1]/div[4]/div[2]/div[1]/div/div/div[2]/div/div/a",
     ]
+
+    @classmethod
+    def open_steam_login_page(cls):
+        driver = Webdriver.load_chrome_driver()
+        driver.get(cls.login_url)
+        try:
+            # Wait until user is logged in
+            WebDriverWait(driver, 600).until(
+                EC.presence_of_element_located((By.ID, cls.user_logged_in_id))
+            )
+
+        finally:
+            driver.quit()
+
+    @classmethod
+    def check_if_user_is_logged_in(cls):
+        driver = Webdriver.load_chrome_driver(hidden=True)
+        driver.get(cls.steam_url)
+        try:
+            driver.find_element(By.ID, cls.user_logged_in_id)
+            print("User is logged in")
+            return True
+        except NoSuchElementException:
+            return False
+        finally:
+            driver.quit()
 
     @classmethod
     def get_apps(cls):
@@ -79,7 +110,7 @@ class Steam:
                 break
 
             try:
-                driver.get(cls.steam_app_url + str(appid))
+                driver.get(cls.app_shop_url + str(appid))
                 is_website_reachable = True
             except TimeoutException:
                 print("TimeoutException occurred")
@@ -91,33 +122,33 @@ class Steam:
 
         current_retry = 0
 
-        appids, appnames = Database.get_free_games_to_redeem()
-        for appid in appids:
+        database_apps = Database.get_free_games_to_redeem()
+        for appid in database_apps:
             if ExitListener.get_exit_flag():
                 break
 
-            print(f"Redeeming: {appnames[appids.index(appid)]} ({appid})")
             if Steam.activate_free_game(appid):
-                print("Success")
+                print(f"Success in redeeming: {database_apps[appid]} ({appid})")
                 Database.update_redeemed(appid, 1)
+                current_retry = 0
             else:
                 Database.update_redeemed(appid, 0)
                 current_retry += 1
-                print(f"Failed: {current_retry}/{cls.max_retries}")
+                print(
+                    f'Failed to redeem "{database_apps[appid]}": {current_retry}/{cls.max_retries}'
+                )
                 timer = cls.rate_limit_retrying_time
 
                 while timer > 0 and current_retry >= cls.max_retries:
                     if ExitListener.get_exit_flag():
                         break
                     print(
+                        "\r",
                         f"Failed. Probably rate Limited. Taking a break: {timer} Minutes remaining",
-                        end="\r",
+                        end="",
                     )
                     sleep(60)  # 1 minute
                     timer -= 1
-
-                if timer <= 0:
-                    current_retry = 0
 
     @classmethod
     def auto_accept_age_gate(cls, driver):
