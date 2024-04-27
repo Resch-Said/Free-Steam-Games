@@ -63,7 +63,7 @@ class Steam:
         :return: Returns a dictionary with the appid as key and the appname as value
         """
         response = requests.get(cls.applist_url)
-        data = json.loads(response.text)
+        data = json.loads(response.text.encode("utf-8"))
 
         app_dict = {app["appid"]: app["name"] for app in data["applist"]["apps"]}
         return app_dict

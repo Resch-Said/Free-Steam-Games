@@ -79,11 +79,13 @@ class Database:
         :param database_apps:
         :return: dict of appid and appname that are in the database but have a different name in the steam_apps
         """
-        return {
-            appid: appname
-            for appid, appname in steam_apps.items()
-            if appid in database_apps and appname != database_apps[appid]
-        }
+        conflicting_apps = {}
+
+        for database_app in database_apps:
+            if database_app in steam_apps:
+                if steam_apps[database_app] != database_apps[database_app]:
+                    conflicting_apps[database_app] = steam_apps[database_app]
+        return conflicting_apps
 
     @classmethod
     def add_new_apps_to_database(cls, steam_apps, database_apps):
