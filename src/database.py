@@ -127,11 +127,7 @@ class Database:
                 print(
                     f"Error in retrieving {appid}. JSONDecodeError. Response was: {response.text}. Skipping"
                 )
-                with open("../database/error.log", "a") as file:
-                    file.write(
-                        f"Error in retrieving {appid}. JSONDecodeError. Response was: {response.text}\n"
-                    )
-                break
+                return None
 
         # Update the name of the app
         try:
