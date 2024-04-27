@@ -122,11 +122,14 @@ class Database:
                 )
                 sleep(cls.app_detail_retrying_time)
             except JSONDecodeError:
-                # TODO:FIX THIS
                 print(
-                    f"Error in retrieving {appid}. JSONDecodeError Retrying in {cls.app_detail_retrying_time} seconds"
+                    f"Error in retrieving {appid}. JSONDecodeError. Response was: {response.text}. Skipping"
                 )
-                sleep(cls.app_detail_retrying_time)
+                with open("../database/error.log", "a") as file:
+                    file.write(
+                        f"Error in retrieving {appid}. JSONDecodeError. Response was: {response.text}\n"
+                    )
+                break
 
         # Update the name of the app
         try:
