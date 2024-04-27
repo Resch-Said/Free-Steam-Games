@@ -128,14 +128,14 @@ class Steam:
                 break
 
             if Steam.activate_free_game(appid):
-                print(f"Success in redeeming: {database_apps[appid]} ({appid})")
+                print(f'Success in redeeming: "{database_apps[appid]}" ({appid})')
                 Database.update_redeemed(appid, 1)
                 current_retry = 0
             else:
                 Database.update_redeemed(appid, 0)
                 current_retry += 1
                 print(
-                    f'Failed to redeem "{database_apps[appid]}": {current_retry}/{cls.max_retries}'
+                    f'Failed to redeem "{database_apps[appid]} ({appid})": {current_retry}/{cls.max_retries}'
                 )
                 timer = cls.rate_limit_retrying_time
 
