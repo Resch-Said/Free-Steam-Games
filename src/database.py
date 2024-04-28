@@ -243,11 +243,8 @@ class Database:
                 f'Name of {appid} changed from "{database_apps[appid]}" to "{appname}"'
             )
 
-            # Delete old entry and add as a new one.
-            cls.execute_sql("DELETE FROM apps WHERE appID = ?", (appid,))
             cls.execute_sql(
-                "INSERT OR IGNORE INTO apps (appID, name)VALUES (?, ?)",
-                (appid, appname),
+                "UPDATE apps SET name = ? WHERE appID = ?", (appname, appid)
             )
 
     @classmethod
