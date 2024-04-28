@@ -1,5 +1,8 @@
 {
   "database": {
     "version": 0
+  },
+  "software": {
+    "version": 0
   }
 }

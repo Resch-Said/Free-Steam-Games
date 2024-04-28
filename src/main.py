@@ -4,6 +4,7 @@ from time import sleep
 
 from database import Database
 from exit_listener import ExitListener
+from settings import Settings
 from steam import Steam
 
 break_time_lock = threading.Lock()
@@ -44,6 +45,7 @@ def update_database():
 
 def main():
     ExitListener.start()
+    print(f"Current Version: {Settings.get_software_version()}")
 
     if not Steam.check_if_user_is_logged_in():
         Steam.open_steam_login_page()

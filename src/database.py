@@ -16,7 +16,7 @@ from steam import Steam
 
 class Database:
     lock = threading.Lock()
-    version = Settings.get_version()
+    version = Settings.get_database_version()
 
     BetterPath.create_path("../database")
     db_path = "../database/steam.db"
