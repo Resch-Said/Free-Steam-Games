@@ -13,7 +13,3 @@ class Settings:
         with open("../settings.json", "r") as f:
             data = json.load(f)
             return data["software"]["version"]
-
-
-print(Settings.get_database_version())
-print(Settings.get_software_version())
