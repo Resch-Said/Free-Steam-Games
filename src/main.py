@@ -28,17 +28,17 @@ def break_time(break_time_hours=8):
 
 def add_steam_games():
     while True:
+        Steam.main()
         if ExitListener.get_exit_flag():
             break
-        Steam.main()
         break_time()
 
 
 def update_database():
     while True:
+        Database.main()
         if ExitListener.get_exit_flag():
             break
-        Database.main()
         break_time()
 
 
