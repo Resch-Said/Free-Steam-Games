@@ -42,13 +42,11 @@ def update_database():
         break_time()
 
 
-# TODO: Make Database and Webdriver threadsafe
 def main():
     ExitListener.start()
 
     if not Steam.check_if_user_is_logged_in():
         Steam.open_steam_login_page()
-    Database.create_database()
 
     database_thread = threading.Thread(target=update_database)
     steam_thread = threading.Thread(target=add_steam_games)

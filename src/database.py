@@ -10,11 +10,13 @@ import requests
 
 from better_path import BetterPath
 from exit_listener import ExitListener
+from settings import Settings
 from steam import Steam
 
 
 class Database:
     lock = threading.Lock()
+    version = Settings.get_version()
 
     BetterPath.create_path("../database")
     db_path = "../database/steam.db"
@@ -48,6 +50,7 @@ class Database:
             "type TEXT, main_game_id INTEGER, success INTEGER, is_free INTEGER,"
             "is_redeemed INTEGER DEFAULT (0), redeem_failed INTEGER DEFAULT(0), last_update TEXT)"
         )
+        cls.create_version_table()
 
     @classmethod
     def get_apps(cls):
@@ -210,6 +213,8 @@ class Database:
 
     @classmethod
     def main(cls):
+        cls.create_database()
+        cls.upgrade_to_version_1()
 
         steam_apps = Steam.get_apps()
         database_apps = cls.get_apps()
@@ -244,6 +249,31 @@ class Database:
                 "INSERT OR IGNORE INTO apps (appID, name)VALUES (?, ?)",
                 (appid, appname),
             )
+
+    @classmethod
+    def get_current_version(cls):
+        version = cls.execute_sql("SELECT version FROM version ORDER BY version DESC")
+        return version[0][0]
+
+    @classmethod
+    def create_version_table(cls):
+        if cls.execute_sql("SELECT * FROM sqlite_master WHERE name = 'version'"):
+            return
+
+        cls.execute_sql(
+            "CREATE TABLE IF NOT EXISTS version (version INTEGER PRIMARY KEY)"
+        )
+        cls.execute_sql(
+            "INSERT OR IGNORE INTO version (version) VALUES (?)", (cls.version,)
+        )
+
+    @classmethod
+    def upgrade_to_version_1(cls):
+        current_version = cls.get_current_version()
+        if current_version >= 1:
+            return
+
+        # Placeholder for future upgrades
 
 
 if __name__ == "__main__":
