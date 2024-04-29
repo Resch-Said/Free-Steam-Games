@@ -114,6 +114,9 @@ class Database:
         data_success = None
 
         while not response_success:
+            if ExitListener.get_exit_flag():
+                return None
+
             response = requests.get(url)
 
             try:
