@@ -135,9 +135,7 @@ class Steam:
                     if ExitListener.get_exit_flag():
                         break
                     print(
-                        "\r",
-                        f"Failed. Probably rate Limited. Taking a break: {timer} Minutes remaining",
-                        end="",
+                        f"Failed. Probably rate Limited. Taking a break: {timer} Minutes remaining"
                     )
                     sleep(60)  # 1 minute
                     timer -= 1
