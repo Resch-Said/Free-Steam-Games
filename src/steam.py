@@ -164,10 +164,10 @@ class Steam:
 
         while not age_check_passed:
             try:
-                driver.find_element(By.CLASS_NAME, "game_area_purchase_game ")
-                age_check_passed = True
-            except NoSuchElementException:
+                driver.find_element(By.ID, "ageYear")
                 sleep(1)
+            except NoSuchElementException:
+                age_check_passed = True
 
     @classmethod
     def age_gate_visible(cls, driver):
