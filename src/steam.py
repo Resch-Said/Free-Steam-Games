@@ -21,7 +21,6 @@ class Steam:
     rate_limit_retrying_time = 61  # Minutes.
     max_retries = 3
 
-
     in_library_class = "already_in_library"
     age_gate_class = "age_gate"
     user_logged_in_id = "account_pulldown"
@@ -105,7 +104,6 @@ class Steam:
 
         try:
             driver.get(cls.app_shop_url + str(appid))
-            is_website_reachable = True
         except TimeoutException:
             print("TimeoutException occurred.")
             return False
@@ -146,7 +144,6 @@ class Steam:
 
     @classmethod
     def auto_accept_age_gate(cls, driver):
-        age_check_passed = False
 
         if not cls.age_gate_visible(driver):
             return
@@ -154,14 +151,11 @@ class Steam:
         driver.find_element(By.ID, "ageYear").send_keys("1900")
         driver.find_element(By.CLASS_NAME, "btnv6_blue_hoverfade").click()
 
-        # Wait until next page is loaded
-
-        while not age_check_passed:
-            try:
-                driver.find_element(By.ID, "ageYear")
-                sleep(1)
-            except NoSuchElementException:
-                age_check_passed = True
+        try:
+            driver.find_element(By.ID, "ageYear")
+            print("Failed to pass Age Gate.")
+        except NoSuchElementException:
+            print("Age Gate successfully passed.")
 
     @classmethod
     def age_gate_visible(cls, driver):
