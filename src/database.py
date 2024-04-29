@@ -128,7 +128,16 @@ class Database:
                     f"Error in retrieving {appid}. Response was: {response.text} Retrying in "
                     f"{cls.app_detail_retrying_time} seconds"
                 )
-                sleep(cls.app_detail_retrying_time)
+                retrying_time = cls.app_detail_retrying_time
+
+                while retrying_time > 0:
+                    if ExitListener.get_exit_flag():
+                        return None
+
+                    print(f"Retrying in {retrying_time} seconds")
+                    sleep(1)
+                    retrying_time -= 1
+
             except JSONDecodeError:
                 print(
                     f"Error in retrieving {appid}. JSONDecodeError. Response was: {response.text}. Skipping"
