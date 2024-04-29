@@ -134,7 +134,6 @@ class Database:
                     if ExitListener.get_exit_flag():
                         return None
 
-                    print(f"Retrying in {retrying_time} seconds")
                     sleep(1)
                     retrying_time -= 1
 
