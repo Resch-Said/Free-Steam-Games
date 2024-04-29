@@ -72,7 +72,7 @@ class Steam:
     def activate_free_game(cls, appid):
         success = False
 
-        driver = Webdriver.load_chrome_driver(hidden=True)
+        driver = Webdriver.load_chrome_driver(hidden=False)
 
         cls.wait_until_website_reachable(appid, driver)
         cls.auto_accept_age_gate(driver)
