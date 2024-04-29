@@ -218,7 +218,9 @@ class Database:
 
             cls.update_app_detail(appid)
             remaining_apps = len(appids) - index
-            print(":\t" + f" {remaining_apps} apps left to update")
+            print(
+                f"Updated {appid} ({database_apps[appid]}) \t {remaining_apps} apps left to update"
+            )
 
     @classmethod
     def update_conflicting_apps(cls, steam_apps, database_apps):
