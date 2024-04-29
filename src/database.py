@@ -62,9 +62,8 @@ class Database:
 
         # Only update games, dlcs and entries that have not been updated yet
         appids = cls.execute_sql(
-            "SELECT appID FROM apps "
-            'WHERE is_redeemed = 0 and (type = "game" or type = "dlc") or (type is null and last_update is null) '
-            "ORDER BY last_update ASC"
+            'SELECT appID from apps WHERE is_redeemed = 0 and (type = "game" or type = "dlc") or (type is null and ('
+            'last_update is null or last_update = "0")) ORDER BY last_update ASC'
         )
 
         appids = [app[0] for app in appids]
