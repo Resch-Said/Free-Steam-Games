@@ -168,7 +168,6 @@ class Database:
             cls.execute_sql(
                 "UPDATE apps SET is_free = ? WHERE appID = ?", (is_free, appid)
             )
-
         except KeyError:
             pass
 
@@ -222,6 +221,8 @@ class Database:
         cls.update_conflicting_apps(steam_apps, database_apps)
 
         appids = cls.get_appids_to_update()
+
+        database_apps = cls.get_apps()
         for index, appid in enumerate(appids):
             if ExitListener.get_exit_flag():
                 break
