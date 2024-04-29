@@ -21,7 +21,6 @@ class Steam:
     rate_limit_retrying_time = 61  # Minutes.
     max_retries = 3
 
-    timeout_exception_retrying_time = 60  # Seconds.
 
     in_library_class = "already_in_library"
     age_gate_class = "age_gate"
@@ -74,7 +73,7 @@ class Steam:
 
         driver = Webdriver.load_chrome_driver(hidden=True)
 
-        cls.wait_until_website_reachable(appid, driver)
+        cls.load_app_store(appid, driver)
         cls.auto_accept_age_gate(driver)
 
         for xpath in cls.free_games_xpath:
@@ -84,7 +83,7 @@ class Steam:
             except NoSuchElementException:
                 pass
 
-        cls.wait_until_website_reachable(appid, driver)
+        cls.load_app_store(appid, driver)
         cls.auto_accept_age_gate(driver)
 
         if cls.already_owned(driver):
@@ -102,19 +101,14 @@ class Steam:
             return False
 
     @classmethod
-    def wait_until_website_reachable(cls, appid, driver):
-        is_website_reachable = False
+    def load_app_store(cls, appid, driver):
 
-        while not is_website_reachable:
-            if ExitListener.get_exit_flag():
-                break
-
-            try:
-                driver.get(cls.app_shop_url + str(appid))
-                is_website_reachable = True
-            except TimeoutException:
-                print("TimeoutException occurred")
-                sleep(cls.timeout_exception_retrying_time)
+        try:
+            driver.get(cls.app_shop_url + str(appid))
+            is_website_reachable = True
+        except TimeoutException:
+            print("TimeoutException occurred.")
+            return False
 
     @classmethod
     def main(cls):
