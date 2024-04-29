@@ -132,17 +132,6 @@ class Database:
                 )
                 return None
 
-        # Update the name of the app
-        try:
-            appname = data[str(appid)]["data"]["name"]
-            print(f"Updating {appname} ({appid})", end="")
-            cls.execute_sql(
-                "UPDATE apps SET name = ? WHERE appID = ?", (appname, appid)
-            )
-
-        except KeyError:
-            pass
-
         # Update the last update time and success
         current_date_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         cls.execute_sql(
@@ -243,8 +232,10 @@ class Database:
                 f'Name of {appid} changed from "{database_apps[appid]}" to "{appname}"'
             )
 
+            cls.execute_sql("DELETE FROM apps WHERE appID = ?", (appid,))
             cls.execute_sql(
-                "UPDATE apps SET name = ? WHERE appID = ?", (appname, appid)
+                "INSERT OR IGNORE INTO apps (appID, name) VALUES (?, ?)",
+                (appid, appname),
             )
 
     @classmethod
