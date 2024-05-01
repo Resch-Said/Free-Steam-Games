@@ -148,6 +148,10 @@ class Steam:
                     sleep(60)  # 1 minute
                     timer -= 1
 
+                    if timer <= 0:
+                        current_retry = 0
+
+
     @classmethod
     def auto_accept_age_gate(cls, driver):
 
