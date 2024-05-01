@@ -8,6 +8,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
 
 from exit_listener import ExitListener
+from logger import Logger
 from webdriver import Webdriver
 
 
@@ -48,7 +49,7 @@ class Steam:
         driver.get(cls.steam_url)
         try:
             driver.find_element(By.ID, cls.user_logged_in_id)
-            print("User is logged in")
+            Logger.write_log("User is logged in")
             return True
         except NoSuchElementException:
             return False
@@ -105,7 +106,9 @@ class Steam:
         try:
             driver.get(cls.app_shop_url + str(appid))
         except TimeoutException:
-            print("TimeoutException occurred.")
+            Logger.write_log(
+                f"TimeoutException occurred while loading {cls.app_shop_url + str(appid)}"
+            )
             return False
 
     @classmethod
@@ -120,21 +123,26 @@ class Steam:
                 break
 
             if Steam.activate_free_game(appid):
-                print(f'Success in redeeming: "{database_apps[appid]}" ({appid})')
+                Logger.write_log(
+                    f'Success in redeeming: "{database_apps[appid]}" ({appid})'
+                )
                 Database.update_redeemed(appid, 1)
                 current_retry = 0
             else:
                 Database.update_redeemed(appid, 0)
                 current_retry += 1
-                print(
+
+                Logger.write_log(
                     f'Failed to redeem "{database_apps[appid]} ({appid})": {current_retry}/{cls.max_retries}'
                 )
+
                 timer = cls.rate_limit_retrying_time
 
                 while timer > 0 and current_retry >= cls.max_retries:
                     if ExitListener.get_exit_flag():
                         break
-                    print(
+
+                    Logger.write_log(
                         f"Failed. Probably rate Limited. Taking a break: {timer} Minutes remaining"
                     )
                     sleep(60)  # 1 minute
@@ -151,9 +159,9 @@ class Steam:
 
         try:
             driver.find_element(By.ID, "ageYear")
-            print("Failed to pass Age Gate.")
+            Logger.write_log("Failed to pass Age Gate.")
         except NoSuchElementException:
-            print("Age Gate successfully passed.")
+            Logger.write_log("Age Gate successfully passed.")
 
     @classmethod
     def age_gate_visible(cls, driver):

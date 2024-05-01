@@ -10,6 +10,7 @@ import requests
 
 from better_path import BetterPath
 from exit_listener import ExitListener
+from logger import Logger
 from settings import Settings
 from steam import Steam
 
@@ -97,7 +98,7 @@ class Database:
             if ExitListener.get_exit_flag():
                 break
 
-            print(f"Adding {appid} to the database")
+            Logger.write_log(f"Adding {appid} to the database")
 
             cls.execute_sql(
                 "INSERT OR IGNORE INTO apps (appID, name)VALUES (?, ?)",
@@ -123,10 +124,12 @@ class Database:
                 data_success = data[str(appid)]["success"]
                 response_success = True
             except TypeError:
-                print(
+
+                Logger.write_log(
                     f"Error in retrieving {appid}. Response was: {response.text} Retrying in "
                     f"{cls.app_detail_retrying_time} seconds"
                 )
+
                 retrying_time = cls.app_detail_retrying_time
 
                 while retrying_time > 0:
@@ -137,7 +140,8 @@ class Database:
                     retrying_time -= 1
 
             except JSONDecodeError:
-                print(
+
+                Logger.write_log(
                     f"Error in retrieving {appid}. JSONDecodeError. Response was: {response.text}. Skipping"
                 )
                 return None
@@ -229,7 +233,8 @@ class Database:
 
             cls.update_app_detail(appid)
             remaining_apps = len(appids) - index
-            print(
+
+            Logger.write_log(
                 f"Updated {appid} ({database_apps[appid]}) \t {remaining_apps} apps left to update"
             )
 
@@ -241,7 +246,7 @@ class Database:
             if ExitListener.get_exit_flag():
                 break
 
-            print(
+            Logger.write_log(
                 f'Name of {appid} changed from "{database_apps[appid]}" to "{appname}"'
             )
 

@@ -5,6 +5,7 @@ from selenium import webdriver
 
 from better_path import BetterPath
 from exit_listener import ExitListener
+from logger import Logger
 
 
 class Webdriver:
@@ -34,7 +35,7 @@ class Webdriver:
             elif os.name == "posix":
                 driver = webdriver.Chrome(service=cls.service, options=chrome_options)
             else:
-                print("OS not supported")
+                Logger.write_log("OS not supported")
                 ExitListener.set_exit_flag(True)
 
             return driver

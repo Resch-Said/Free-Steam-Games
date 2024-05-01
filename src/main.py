@@ -4,6 +4,7 @@ from time import sleep
 
 from database import Database
 from exit_listener import ExitListener
+from logger import Logger
 from settings import Settings
 from steam import Steam
 
@@ -16,9 +17,9 @@ def break_time(break_time_hours=8):
             break_time_hours = 1.01
 
         end_time = datetime.now() + timedelta(hours=break_time_hours)
-        print(
-            "\r",
-            f"Taking a break for {break_time_hours} hours. Ending at {str(end_time).split('.')[0]}",
+
+        Logger.write_log(
+            f"Taking a break for {break_time_hours} hours. Ending at {str(end_time).split('.')[0]}"
         )
 
     while datetime.now() < end_time:
@@ -45,7 +46,7 @@ def update_database():
 
 def main():
     ExitListener.start()
-    print(f"Current Version: {Settings.get_software_version()}")
+    Logger.write_log(f"Current Version: {Settings.get_software_version()}")
 
     if not Steam.check_if_user_is_logged_in():
         Steam.open_steam_login_page()
@@ -59,7 +60,7 @@ def main():
     database_thread.join()
     steam_thread.join()
 
-    print("Done!")
+    Logger.write_log("Done!")
 
 
 if __name__ == "__main__":

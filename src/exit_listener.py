@@ -1,5 +1,7 @@
 import threading
 
+from logger import Logger
+
 
 class ExitListener:
     exit_flag = False
@@ -8,9 +10,11 @@ class ExitListener:
     def listener_quit(cls):
         while not cls.get_exit_flag():
             result = input("Press 'q' to exit the program.\n")
+            Logger.write_log(f"User input: {result}")
+
             if result == "q":
                 cls.set_exit_flag(True)
-                print("\nExiting the program. Please wait...")
+                Logger.write_log("Exiting the program.")
 
     @classmethod
     def get_exit_flag(cls):
