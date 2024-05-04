@@ -11,10 +11,8 @@ from steam import Steam
 break_time_lock = threading.Lock()
 
 
-def break_time(break_time_hours=8):
+def break_time(break_time_hours):
     with break_time_lock:
-        if break_time_hours <= 1:
-            break_time_hours = 1.01
 
         end_time = datetime.now() + timedelta(hours=break_time_hours)
 
@@ -29,19 +27,15 @@ def break_time(break_time_hours=8):
 
 
 def add_steam_games():
-    while True:
+    while not ExitListener.get_exit_flag():
         Steam.main()
-        if ExitListener.get_exit_flag():
-            break
-        break_time()
+        break_time(break_time_hours=8)
 
 
 def update_database():
-    while True:
+    while not ExitListener.get_exit_flag():
         Database.main()
-        if ExitListener.get_exit_flag():
-            break
-        break_time()
+        break_time(break_time_hours=0.5)
 
 
 def main():
