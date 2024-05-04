@@ -25,6 +25,7 @@ class Steam:
     in_library_class = "already_in_library"
     age_gate_class = "age_gate"
     user_logged_in_id = "account_pulldown"
+    skip_xpath = [f'//*[@id="add_to_wishlist_area2"]/a/span']
     free_games_xpath = [
         f"//*[starts-with(@onclick, 'AddFreeLicense')]",
         f"/html/body/div[1]/div[7]/div[6]/div[3]/div[2]/div[1]/div[4]/div[2]/div[1]/div/div/div[2]/div/div/a",
@@ -69,12 +70,25 @@ class Steam:
 
     @classmethod
     def activate_free_game(cls, appid):
-        success = False
+        """
+
+        :param appid:
+        :return: 1 if successful, 0 if failed and -1 if skipped
+        """
+
+        success = 0
 
         driver = Webdriver.load_chrome_driver(hidden=True)
 
         cls.load_app_store(appid, driver)
         cls.auto_accept_age_gate(driver)
+
+        for xpath in cls.skip_xpath:
+            try:
+                driver.find_element(By.XPATH, xpath)
+                success = -1
+            except NoSuchElementException:
+                pass
 
         for xpath in cls.free_games_xpath:
             try:
@@ -87,7 +101,7 @@ class Steam:
         cls.auto_accept_age_gate(driver)
 
         if cls.already_owned(driver):
-            success = True
+            success = 1
 
         driver.quit()
         return success
@@ -122,11 +136,18 @@ class Steam:
             if ExitListener.get_exit_flag():
                 break
 
-            if Steam.activate_free_game(appid):
+            steam_activation_result = cls.activate_free_game(appid)
+
+            if steam_activation_result == 1:
                 Logger.write_log(
                     f'Success in redeeming: "{database_apps[appid]}" ({appid})'
                 )
                 Database.update_redeemed(appid, 1)
+                current_retry = 0
+
+            elif steam_activation_result == -1:
+                Logger.write_log(f'Skipped "{database_apps[appid]} ({appid})"')
+                Database.update_redeemed(appid, 0)
                 current_retry = 0
             else:
                 Database.update_redeemed(appid, 0)
@@ -150,7 +171,6 @@ class Steam:
 
                     if timer <= 0:
                         current_retry = 0
-
 
     @classmethod
     def auto_accept_age_gate(cls, driver):
