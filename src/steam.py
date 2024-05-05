@@ -22,7 +22,7 @@ class Steam:
     rate_limit_retrying_time = 61  # Minutes.
     max_retries = 3
 
-    in_library_class = "already_in_library"
+    in_library_xpath = [f"//div[contains(@class, 'already_in_library')]"]
     age_gate_class = "age_gate"
     user_logged_in_id = "account_pulldown"
     skip_xpath = [f'//*[@id="add_to_wishlist_area2"]/a/span']
@@ -108,11 +108,14 @@ class Steam:
 
     @classmethod
     def already_owned(cls, driver):
-        try:
-            driver.find_element(By.CLASS_NAME, cls.in_library_class)
-            return True
-        except NoSuchElementException:
-            return False
+        for xpath in cls.in_library_xpath:
+            try:
+                driver.find_element(By.XPATH, xpath)
+                return True
+            except NoSuchElementException:
+                pass
+
+        return False
 
     @classmethod
     def load_app_store(cls, appid, driver):
