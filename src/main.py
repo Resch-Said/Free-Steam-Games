@@ -35,7 +35,7 @@ def add_steam_games():
 def update_database():
     while not ExitListener.get_exit_flag():
         Database.main()
-        break_time(break_time_hours=0.5)
+        break_time(break_time_hours=0.1)
 
 
 def main():
