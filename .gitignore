@@ -163,4 +163,4 @@ cookies.json
 /driver
 /selenium
 *.db-journal
-*.db
+database/steam.db
