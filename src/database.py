@@ -30,11 +30,13 @@ class Database:
         return sqlite3.connect(Database.db_path)
 
     @classmethod
-    def execute_sql(cls, sql, values=None):
+    def execute_sql(cls, sql, values=None, many=False):
         with cls.lock:
             with closing(cls.get_connection()) as con:
                 with closing(con.cursor()) as cur:
-                    if values:
+                    if many:
+                        cur.executemany(sql, values)
+                    elif values:
                         cur.execute(sql, values)
                     else:
                         cur.execute(sql)
@@ -93,17 +95,20 @@ class Database:
     @classmethod
     def add_new_apps_to_database(cls, steam_apps, database_apps):
         new_apps = cls.get_apps_not_in_database(steam_apps, database_apps)
+        apps_data = [(appid, steam_apps[appid]) for appid in new_apps]
 
-        for appid in new_apps:
-            if ExitListener.get_exit_flag():
-                break
+        if ExitListener.get_exit_flag():
+            return
 
-            Logger.write_log(f"Adding {appid} to the database")
+        Logger.write_log(f"Adding new apps to the database")
 
-            cls.execute_sql(
-                "INSERT OR IGNORE INTO apps (appID, name)VALUES (?, ?)",
-                (appid, steam_apps[appid]),
-            )
+        cls.execute_sql(
+            "INSERT OR IGNORE INTO apps (appID, name)VALUES (?, ?)",
+            apps_data,
+            many=True,
+        )
+
+        Logger.write_log(f"Added {len(new_apps)} new apps to the database")
 
     @classmethod
     def update_app_detail(cls, appid):
