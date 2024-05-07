@@ -1,4 +1,5 @@
 import json
+import os
 import sqlite3
 import threading
 from contextlib import closing
@@ -21,18 +22,19 @@ class Database:
 
     BetterPath.create_path("../database")
     db_path = "../database/steam.db"
+    prebuilt_db_path = "../database/prebuilt.db"
 
     app_detail_url = "https://store.steampowered.com/api/appdetails?appids="
     app_detail_retrying_time = 60 * 4  # Seconds
 
     @staticmethod
-    def get_connection():
-        return sqlite3.connect(Database.db_path)
+    def get_connection(path=db_path):
+        return sqlite3.connect(path)
 
     @classmethod
-    def execute_sql(cls, sql, values=None, many=False):
+    def execute_sql(cls, sql, values=None, many=False, db_path=db_path):
         with cls.lock:
-            with closing(cls.get_connection()) as con:
+            with closing(cls.get_connection(db_path)) as con:
                 with closing(con.cursor()) as cur:
                     if many:
                         cur.executemany(sql, values)
@@ -229,6 +231,8 @@ class Database:
         cls.add_new_apps_to_database(steam_apps, database_apps)
         cls.update_conflicting_apps(steam_apps, database_apps)
 
+        cls.update_from_prebuilt_database()
+
         appids = cls.get_appids_to_update()
 
         database_apps = cls.get_apps()
@@ -285,6 +289,31 @@ class Database:
             return
 
         # Placeholder for future upgrades
+
+    @classmethod
+    def update_from_prebuilt_database(cls):
+        if not os.path.exists(cls.prebuilt_db_path):
+            return
+
+        prebuilt_data = cls.execute_sql(
+            "SELECT type, main_game_id, success, is_free, last_update, appID FROM apps",
+            db_path=cls.prebuilt_db_path,
+        )
+
+        Logger.write_log("Updating from prebuilt database")
+
+        cls.execute_sql(
+            """
+            UPDATE apps
+            SET type = ?, main_game_id = ?, success = ?, is_free = ?, last_update = ?
+            WHERE appID = ?
+            """,
+            prebuilt_data,
+            many=True,
+        )
+
+        Logger.write_log("Done updating from prebuilt database")
+        os.remove(cls.prebuilt_db_path)
 
 
 if __name__ == "__main__":
