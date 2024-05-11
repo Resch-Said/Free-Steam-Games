@@ -62,7 +62,13 @@ class Steam:
         """
         :return: Returns a dictionary with the appid as key and the appname as value
         """
-        response = requests.get(cls.applist_url)
+        
+        try:
+            response = requests.get(cls.applist_url)
+        except ConnectionError:
+            Logger.write_log("ConnectionError occurred while fetching app list")
+            return {}
+            
         data = json.loads(response.text.encode("utf-8"))
 
         app_dict = {app["appid"]: app["name"] for app in data["applist"]["apps"]}
