@@ -123,8 +123,21 @@ class Database:
         while not response_success:
             if ExitListener.get_exit_flag():
                 return None
-
-            response = requests.get(url)
+            
+            try:
+                response = requests.get(url)
+            except ConnectionError:
+                Logger.write_log(
+                    f"ConnectionError in retrieving {appid}. Skipping. Taking a break for {cls.app_detail_retrying_time} seconds"
+                )
+                retrying_time = cls.app_detail_retrying_time
+                while retrying_time > 0:
+                    if ExitListener.get_exit_flag():
+                        return None
+                    sleep(1)
+                    retrying_time -= 1
+                    
+                return None
 
             try:
                 data = json.loads(response.text)
