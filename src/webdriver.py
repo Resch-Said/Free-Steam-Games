@@ -1,5 +1,4 @@
 import os
-import threading
 
 from selenium import webdriver
 
@@ -14,31 +13,24 @@ class Webdriver:
 
     # For Linux
     service = webdriver.ChromeService(executable_path="/usr/bin/chromedriver")
-    lock = threading.Lock()
 
     @classmethod
     def load_chrome_driver(cls, hidden=False):
-        with cls.lock:
-            driver = None
-
-            chrome_options = webdriver.ChromeOptions()
-
-            chrome_options.add_argument(f"user-data-dir={cls.browser_path}")
-            chrome_options.add_argument("--enable-chrome-browser-cloud-management")
-            chrome_options.add_argument("--no-sandbox")
-
-            if hidden:
-                chrome_options.add_argument("--headless=new")
-
-            if os.name == "nt":
-                driver = webdriver.Chrome(options=chrome_options)
-            elif os.name == "posix":
-                driver = webdriver.Chrome(service=cls.service, options=chrome_options)
-            else:
-                Logger.write_log("OS not supported")
-                ExitListener.set_exit_flag(True)
-
-            return driver
+        driver = None
+        chrome_options = webdriver.ChromeOptions()
+        chrome_options.add_argument(f"user-data-dir={cls.browser_path}")
+        chrome_options.add_argument("--enable-chrome-browser-cloud-management")
+        chrome_options.add_argument("--no-sandbox")
+        if hidden:
+            chrome_options.add_argument("--headless=new")
+        if os.name == "nt":
+            driver = webdriver.Chrome(options=chrome_options)
+        elif os.name == "posix":
+            driver = webdriver.Chrome(service=cls.service, options=chrome_options)
+        else:
+            Logger.write_log("OS not supported")
+            ExitListener.set_exit_flag(True)
+        return driver
 
     @classmethod
     def main(cls):

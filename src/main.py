@@ -9,17 +9,14 @@ from logger import Logger
 from settings import Settings
 from steam import Steam
 
-break_time_lock = threading.Lock()
 
 
 def break_time(break_time_hours):
-    with break_time_lock:
+    end_time = datetime.now() + timedelta(hours=break_time_hours)
 
-        end_time = datetime.now() + timedelta(hours=break_time_hours)
-
-        Logger.write_log(
-            f"Taking a break for {break_time_hours} hours. Ending at {str(end_time).split('.')[0]}"
-        )
+    Logger.write_log(
+        f"Taking a break for {break_time_hours} hours. Ending at {str(end_time).split('.')[0]}"
+    )
 
     while datetime.now() < end_time:
         if ExitListener.get_exit_flag():
@@ -49,9 +46,6 @@ def main():
     with ThreadPoolExecutor(max_workers=2) as executor:
         executor.submit(update_database)
         executor.submit(add_steam_games)
-        
-    
-
 
     Logger.write_log("Done!")
 

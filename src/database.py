@@ -1,7 +1,6 @@
 import json
 import os
 import sqlite3
-import threading
 from contextlib import closing
 from datetime import datetime
 from json import JSONDecodeError
@@ -17,7 +16,6 @@ from steam import Steam
 
 
 class Database:
-    lock = threading.Lock()
     version = Settings.get_database_version()
 
     BetterPath.create_path("../database")
@@ -33,20 +31,18 @@ class Database:
 
     @classmethod
     def execute_sql(cls, sql, values=None, many=False, db_path=db_path):
-        with cls.lock:
-            with closing(cls.get_connection(db_path)) as con:
-                with closing(con.cursor()) as cur:
-                    if many:
-                        cur.executemany(sql, values)
-                    elif values:
-                        cur.execute(sql, values)
-                    else:
-                        cur.execute(sql)
-
-                    if sql.strip().upper().startswith("SELECT"):
-                        return cur.fetchall()
-                    else:
-                        con.commit()
+        with closing(cls.get_connection(db_path)) as con:
+            with closing(con.cursor()) as cur:
+                if many:
+                    cur.executemany(sql, values)
+                elif values:
+                    cur.execute(sql, values)
+                else:
+                    cur.execute(sql)
+                if sql.strip().upper().startswith("SELECT"):
+                    return cur.fetchall()
+                else:
+                    con.commit()
 
     @classmethod
     def create_database(cls):
