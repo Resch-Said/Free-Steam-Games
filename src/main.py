@@ -1,3 +1,4 @@
+from concurrent.futures import ThreadPoolExecutor
 import threading
 from datetime import datetime, timedelta
 from time import sleep
@@ -44,15 +45,13 @@ def main():
 
     if not Steam.check_if_user_is_logged_in():
         Steam.open_steam_login_page()
+        
+    with ThreadPoolExecutor(max_workers=2) as executor:
+        executor.submit(update_database)
+        executor.submit(add_steam_games)
+        
+    
 
-    database_thread = threading.Thread(target=update_database)
-    steam_thread = threading.Thread(target=add_steam_games)
-
-    database_thread.start()
-    steam_thread.start()
-
-    database_thread.join()
-    steam_thread.join()
 
     Logger.write_log("Done!")
 
