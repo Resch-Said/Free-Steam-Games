@@ -203,6 +203,8 @@ class Steam:
             return True
         except NoSuchElementException:
             return False
+        except TimeoutException:
+            return False
 
 
 if __name__ == "__main__":
