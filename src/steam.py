@@ -62,16 +62,18 @@ class Steam:
         """
         :return: Returns a dictionary with the appid as key and the appname as value
         """
-        
+
         try:
             response = requests.get(cls.applist_url)
         except ConnectionError:
-            Logger.write_log("ConnectionError occurred while fetching app list")
+            Logger.write_log(
+                "ConnectionError occurred while fetching app list")
             return {}
-            
+
         data = json.loads(response.text.encode("utf-8"))
 
-        app_dict = {app["appid"]: app["name"] for app in data["applist"]["apps"]}
+        app_dict = {app["appid"]: app["name"]
+                    for app in data["applist"]["apps"]}
         return app_dict
 
     @classmethod
@@ -130,7 +132,7 @@ class Steam:
             driver.get(cls.app_shop_url + str(appid))
         except TimeoutException:
             Logger.write_log(
-                f"TimeoutException occurred while loading {cls.app_shop_url + str(appid)}"
+                f"TimeoutException occurred while loading {cls.app_shop_url + str(appid)}", log_file=True
             )
             return False
 
@@ -204,6 +206,9 @@ class Steam:
         except NoSuchElementException:
             return False
         except TimeoutException:
+            Logger.write_log(
+                f"TimeoutException occurred while waiting for Age Gate to load", log_file=True
+            )
             return False
 
 

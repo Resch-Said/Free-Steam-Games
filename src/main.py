@@ -1,5 +1,4 @@
 from concurrent.futures import ThreadPoolExecutor
-import threading
 from datetime import datetime, timedelta
 from time import sleep
 
@@ -8,7 +7,6 @@ from exit_listener import ExitListener
 from logger import Logger
 from settings import Settings
 from steam import Steam
-
 
 
 def break_time(break_time_hours):
@@ -42,7 +40,7 @@ def main():
 
     if not Steam.check_if_user_is_logged_in():
         Steam.open_steam_login_page()
-        
+
     with ThreadPoolExecutor(max_workers=2) as executor:
         executor.submit(update_database)
         executor.submit(add_steam_games)
