@@ -170,8 +170,7 @@ class Database:
         )
 
         cls.execute_sql(
-            "UPDATE apps SET success = ? WHERE appID = ?", (
-                data_success, appid)
+            "UPDATE apps SET success = ? WHERE appID = ?", (data_success, appid)
         )
 
         # Update the type of the app
@@ -277,8 +276,7 @@ class Database:
 
     @classmethod
     def get_current_version(cls):
-        version = cls.execute_sql(
-            "SELECT version FROM version ORDER BY version DESC")
+        version = cls.execute_sql("SELECT version FROM version ORDER BY version DESC")
         return version[0][0]
 
     @classmethod
